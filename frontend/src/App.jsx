@@ -2,7 +2,8 @@ import React from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import AdminReports from './pages/AdminReports';
 import StaffManagement from './pages/StaffManagement';
-import { LayoutDashboard, Users, Settings, LogOut, Car } from 'lucide-react';
+import PartsManagement from './pages/PartsManagement';
+import { LayoutDashboard, Users, Settings, LogOut, Car, Package } from 'lucide-react';
 
 const SidebarLink = ({ to, icon: Icon, label, active }) => (
   <Link 
@@ -46,10 +47,10 @@ function App() {
             active={location.pathname === '/staff'} 
           />
           <SidebarLink 
-            to="#" 
-            icon={Settings} 
-            label="Inventory (Soon)" 
-            active={false} 
+            to="/parts" 
+            icon={Package} 
+            label="Parts Management" 
+            active={location.pathname === '/parts'} 
           />
         </nav>
 
@@ -66,6 +67,7 @@ function App() {
         <Routes>
           <Route path="/" element={<AdminReports />} />
           <Route path="/staff" element={<StaffManagement />} />
+          <Route path="/parts" element={<PartsManagement />} />
         </Routes>
       </div>
     </div>

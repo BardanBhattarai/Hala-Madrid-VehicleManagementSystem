@@ -16,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Register Services
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
+builder.Services.AddScoped<IPartService, PartService>();
 
 // Configure JWT Authentication (Coursework standard)
 builder.Services.AddAuthentication("Bearer")
