@@ -1,15 +1,21 @@
 # .gitignore for Vehicle Parts Selling and Inventory Management System
 
-# .NET / C#
-bin/
-obj/
-*.user
-*.userosscache
-*.sln.docstates
-
 # Visual Studio
 .vs/
 .vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# .NET / C#
+bin/
+obj/
+out/
+publish/
+*.nupkg
+*.snupkg
+project.lock.json
 
 # Node / React
 node_modules/
@@ -20,9 +26,19 @@ dist/
 .env.test.local
 .env.production.local
 
-# Build outputs
+# Logs
 *.log
-*.swp
+logs/
 
-# PostgreSQL / secrets
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code / AI tools
+.claude/
+docs/superpowers/
+memory/
+
+# Secrets / local config
 appsettings.Development.json
+*.local.json
