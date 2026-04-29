@@ -9,7 +9,7 @@ import {
   Calendar, ChevronRight, AlertTriangle, Loader2 
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:7251/api'; 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5051/api'; 
 
 const AdminReports = () => {
   const [reportType, setReportType] = useState('daily');

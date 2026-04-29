@@ -1,63 +1,40 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using VehiclePartsSystem.Features.Customers.Services;
-using VehiclePartsSystem.Features.SalesInvoices.Services;
-using VehiclePartsSystem.Features.Vendors.Services;
-using VehiclePartsSystem.Infrastructure.Data;
+using VehicleManagement.Data;
+using VehicleManagement.Services;
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-// Swagger with JWT support (ready for when auth team merges)
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Vehicle Parts System API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter: Bearer {your JWT token}"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+// Configure DbContext for PostgreSQL
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
-// --- SHARED: Authentication — JWT configuration added by auth team member ---
-// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//     .AddJwtBearer(options => { ... });
-builder.Services.AddAuthorization();
-// --- End Authentication ---
-
-// --- Tasks 5-8: Database ---
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-// --- End Database ---
-
-// --- Tasks 5-8: Feature Services ---
+// Register Services
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IStaffService, StaffService>();
+builder.Services.AddScoped<IPartService, PartService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
-// --- End Tasks 5-8 ---
+builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
-// --- Tasks 5-8: CORS for development ---
-builder.Services.AddCors(options => options.AddPolicy("Dev",
-    p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
-// --- End CORS ---
+// builder.Services.AddAuthentication("Bearer").AddJwtBearer();
+// builder.Services.AddAuthorization();
 
-// MERGE: Other team members add their service registrations above this line
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy => policy.WithOrigins("http://localhost:5173")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
 
 var app = builder.Build();
 
@@ -67,9 +44,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("Dev");
+app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
-app.UseAuthentication(); // MERGE: needed for JWT — auth team member completes the setup
-app.UseAuthorization();
+// app.UseAuthentication();
+// app.UseAuthorization();
 app.MapControllers();
+
 app.Run();

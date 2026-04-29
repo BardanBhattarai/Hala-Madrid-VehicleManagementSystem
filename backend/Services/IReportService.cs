@@ -1,5 +1,7 @@
 using VehicleManagement.DTOs;
 
+
+using VehicleManagement.Models;
 namespace VehicleManagement.Services
 {
     public interface IReportService

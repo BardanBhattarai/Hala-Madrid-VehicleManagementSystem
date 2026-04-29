@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
+using VehicleManagement.Models;
 namespace VehicleManagement.Controllers
 {
     [ApiController]

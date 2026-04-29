@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using VehicleManagement.Data;
 using VehicleManagement.DTOs;
-using VehicleManagement.Models;
 
+
+
+using VehicleManagement.Models;
 namespace VehicleManagement.Services
 {
     public class ReportService : IReportService
@@ -26,11 +28,11 @@ namespace VehicleManagement.Services
 
             // Fetch purchase data
             var purchases = await _context.PurchaseInvoices
-                .Where(p => p.InvoiceDate >= dayStart && p.InvoiceDate < dayEnd)
+                .Where(p => p.PurchaseDate >= dayStart && p.PurchaseDate < dayEnd)
                 .ToListAsync();
 
             var totalSales = sales.Sum(s => s.TotalAmount);
-            var totalPurchases = purchases.Sum(p => p.TotalCost);
+            var totalPurchases = purchases.Sum(p => p.TotalAmount);
 
             return new FinancialReportDto
             {
@@ -53,11 +55,11 @@ namespace VehicleManagement.Services
                 .ToListAsync();
 
             var purchases = await _context.PurchaseInvoices
-                .Where(p => p.InvoiceDate >= monthStart && p.InvoiceDate < monthEnd)
+                .Where(p => p.PurchaseDate >= monthStart && p.PurchaseDate < monthEnd)
                 .ToListAsync();
 
             var totalSales = sales.Sum(s => s.TotalAmount);
-            var totalPurchases = purchases.Sum(p => p.TotalCost);
+            var totalPurchases = purchases.Sum(p => p.TotalAmount);
 
             return new FinancialReportDto
             {
@@ -80,11 +82,11 @@ namespace VehicleManagement.Services
                 .ToListAsync();
 
             var purchases = await _context.PurchaseInvoices
-                .Where(p => p.InvoiceDate >= yearStart && p.InvoiceDate < yearEnd)
+                .Where(p => p.PurchaseDate >= yearStart && p.PurchaseDate < yearEnd)
                 .ToListAsync();
 
             var totalSales = sales.Sum(s => s.TotalAmount);
-            var totalPurchases = purchases.Sum(p => p.TotalCost);
+            var totalPurchases = purchases.Sum(p => p.TotalAmount);
 
             return new FinancialReportDto
             {
@@ -103,7 +105,7 @@ namespace VehicleManagement.Services
             try 
             {
                 var totalSales = await _context.SalesInvoices.SumAsync(s => s.TotalAmount);
-                var totalPurchases = await _context.PurchaseInvoices.SumAsync(p => p.TotalCost);
+                var totalPurchases = await _context.PurchaseInvoices.SumAsync(p => p.TotalAmount);
                 var lowStockCount = await _context.Parts.CountAsync(p => p.StockQuantity <= p.LowStockThreshold);
 
                 var recentSales = await _context.SalesInvoices
@@ -113,9 +115,9 @@ namespace VehicleManagement.Services
                     .ToListAsync();
 
                 var recentPurchases = await _context.PurchaseInvoices
-                    .OrderByDescending(p => p.InvoiceDate)
+                    .OrderByDescending(p => p.PurchaseDate)
                     .Take(5)
-                    .Select(p => new RecentInvoiceDto { Id = p.Id, Type = "Purchase", Amount = p.TotalCost, Date = p.InvoiceDate })
+                    .Select(p => new RecentInvoiceDto { Id = p.Id, Type = "Purchase", Amount = p.TotalAmount, Date = p.PurchaseDate })
                     .ToListAsync();
 
                 var recentInvoices = recentSales.Concat(recentPurchases)

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:7251/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5051/api';
 
 const staffApi = {
   getAllStaff: () => axios.get(`${API_BASE_URL}/staff`),

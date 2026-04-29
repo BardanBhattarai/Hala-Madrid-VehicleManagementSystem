@@ -1,59 +1,57 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using VehiclePartsSystem.Common.Responses;
-using VehiclePartsSystem.Domain.Entities;
-using VehiclePartsSystem.Infrastructure.Data;
+using VehicleManagement.DTOs;
+using VehicleManagement.Services;
 
-namespace VehiclePartsSystem.Controllers;
-
-// STUB CONTROLLER — for testing only until inventory module is merged.
-// MERGE: Remove this file and replace with the inventory team member's PartsController.
-[ApiController]
-[Route("api/[controller]")]
-public class PartsController : ControllerBase
+using VehicleManagement.Models;
+namespace VehicleManagement.Controllers
 {
-    private readonly ApplicationDbContext _db;
-
-    public PartsController(ApplicationDbContext db) => _db = db;
-
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [ApiController]
+    [Route("api/[controller]")]
+    public class PartsController : ControllerBase
     {
-        var parts = await _db.Parts
-            .Select(p => new { p.Id, p.PartName, p.StockQuantity, p.UnitPrice })
-            .ToListAsync();
-        return Ok(ApiResponse<object>.SuccessResponse(parts));
-    }
+        private readonly IPartService _partService;
 
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreatePartDto dto)
-    {
-        var part = new Part
+        public PartsController(IPartService partService)
         {
-            Id = Guid.NewGuid(),
-            PartName = dto.PartName,
-            StockQuantity = dto.StockQuantity,
-            UnitPrice = dto.UnitPrice
-        };
-        _db.Parts.Add(part);
-        await _db.SaveChangesAsync();
-        return Ok(ApiResponse<object>.SuccessResponse(new { part.Id, part.PartName, part.StockQuantity, part.UnitPrice }, "Part created."));
-    }
+            _partService = partService;
+        }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        var part = await _db.Parts.FindAsync(id);
-        if (part == null) return NotFound(ApiResponse<string>.Fail("Part not found."));
-        _db.Parts.Remove(part);
-        await _db.SaveChangesAsync();
-        return Ok(ApiResponse<string>.SuccessResponse("Part deleted."));
-    }
-}
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<PartResponseDto>>> GetAllParts()
+        {
+            var parts = await _partService.GetAllPartsAsync();
+            return Ok(parts);
+        }
 
-public class CreatePartDto
-{
-    public string PartName { get; set; } = string.Empty;
-    public int StockQuantity { get; set; }
-    public decimal UnitPrice { get; set; }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PartResponseDto>> GetPartById(int id)
+        {
+            var part = await _partService.GetPartByIdAsync(id);
+            if (part == null) return NotFound();
+            return Ok(part);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<PartResponseDto>> CreatePart(PartCreateDto dto)
+        {
+            var part = await _partService.CreatePartAsync(dto);
+            return CreatedAtAction(nameof(GetPartById), new { id = part.Id }, part);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePart(int id, PartUpdateDto dto)
+        {
+            var updatedPart = await _partService.UpdatePartAsync(id, dto);
+            if (updatedPart == null) return NotFound();
+            return Ok(updatedPart);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePart(int id)
+        {
+            var result = await _partService.DeletePartAsync(id);
+            if (!result) return NotFound();
+            return NoContent();
+        }
+    }
 }

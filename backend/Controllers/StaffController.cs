@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using VehicleManagement.DTOs;
 using VehicleManagement.Services;
 
+using VehicleManagement.Models;
 namespace VehicleManagement.Controllers
 {
     [ApiController]
