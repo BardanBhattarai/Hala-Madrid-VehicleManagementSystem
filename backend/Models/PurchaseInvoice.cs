@@ -8,11 +8,18 @@ namespace VehicleManagement.Models
         public int Id { get; set; }
 
         [Required]
-        public DateTime InvoiceDate { get; set; } = DateTime.UtcNow;
+        public string InvoiceNumber { get; set; } = string.Empty;
 
         [Required]
-        public decimal TotalCost { get; set; }
+        public DateTime PurchaseDate { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        public decimal TotalAmount { get; set; }
 
         public string SupplierName { get; set; } = string.Empty;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public ICollection<PurchaseInvoiceItem> Items { get; set; } = new List<PurchaseInvoiceItem>();
     }
 }
