@@ -9,8 +9,8 @@
 *.sln.docstates
 
 # .NET / C#
-bin/
-obj/
+**/bin/
+**/obj/
 out/
 publish/
 *.nupkg
@@ -18,8 +18,8 @@ publish/
 project.lock.json
 
 # Node / React
-node_modules/
-dist/
+**/node_modules/
+**/dist/
 .env
 .env.local
 .env.development.local
