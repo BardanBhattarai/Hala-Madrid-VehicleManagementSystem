@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
 import { 
   LayoutDashboard, Users, LogOut, Car, 
-  Package, Truck, UserCircle, FileText, ShoppingCart
+  Package, Truck, UserCircle, FileText, ShoppingCart,
+  BarChart3, ClipboardList
 } from 'lucide-react';
 
 const SidebarLink = ({ to, icon: Icon, label, active }) => (
@@ -75,10 +76,22 @@ function App() {
             active={location.pathname.startsWith('/customers')} 
           />
           <SidebarLink 
+            to="/sales-invoices" 
+            icon={ClipboardList} 
+            label="Sales History" 
+            active={location.pathname === '/sales-invoices'} 
+          />
+          <SidebarLink 
             to="/sales-invoices/new" 
             icon={FileText} 
             label="New Sale" 
             active={location.pathname === '/sales-invoices/new'} 
+          />
+          <SidebarLink 
+            to="/customer-reports" 
+            icon={BarChart3} 
+            label="Customer Reports" 
+            active={location.pathname === '/customer-reports'} 
           />
         </nav>
 
