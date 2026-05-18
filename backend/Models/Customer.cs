@@ -1,0 +1,16 @@
+namespace VehicleManagement.Models
+{
+    public class Customer
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public decimal CreditBalance { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+        public ICollection<SalesInvoice> SalesInvoices { get; set; } = new List<SalesInvoice>();
+    }
+}

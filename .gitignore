@@ -1,20 +1,30 @@
+# .gitignore for Vehicle Parts Selling and Inventory Management System
+
 # Visual Studio
 .vs/
+.vscode/
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
 
-# Build outputs
-bin/
-obj/
+# .NET / C#
+**/bin/
+**/obj/
 out/
 publish/
-
-# .NET
 *.nupkg
 *.snupkg
 project.lock.json
+
+# Node / React
+**/node_modules/
+**/dist/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
 *.log

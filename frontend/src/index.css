@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  
+  /* Force Light Mode / High Contrast */
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f8fafc; /* Slate 50 */
+}
+
+#root {
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+/* Ensure nothing is transparent by default if it should have a background */
+.bg-white {
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Global text color override to ensure it's not washed out */
+h1, h2, h3, h4, h5, h6 {
+  color: #0f172a !important; /* Slate 900 */
+}
+
+p, span, label, td, th {
+  color: #334155; /* Slate 700 */
+}
+
+/* Fix for transparent looking inputs */
+input, select, textarea {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
