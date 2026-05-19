@@ -11,5 +11,6 @@ namespace VehicleManagement.Services
         Task<StaffResponseDto> CreateStaffAsync(StaffCreateDto dto);
         Task<bool> UpdateStaffAsync(int id, StaffUpdateDto dto);
         Task<bool> DeleteStaffAsync(int id);
+        Task<StaffResponseDto?> LoginAsync(StaffLoginDto dto);
     }
 }

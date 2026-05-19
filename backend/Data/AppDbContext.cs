@@ -34,6 +34,12 @@ namespace VehicleManagement.Data
                 e.HasKey(c => c.Id);
                 e.Property(c => c.FullName).IsRequired().HasMaxLength(200);
                 e.Property(c => c.CreditBalance).HasPrecision(18, 2);
+                e.Property(c => c.PasswordHash).HasMaxLength(500);
+
+                // Feature 10: Indexes for efficient search queries
+                e.HasIndex(c => c.FullName).HasDatabaseName("IX_Customer_FullName");
+                e.HasIndex(c => c.PhoneNumber).HasDatabaseName("IX_Customer_PhoneNumber");
+                e.HasIndex(c => c.Email).HasDatabaseName("IX_Customer_Email");
             });
 
             modelBuilder.Entity<Vehicle>(e =>
@@ -44,6 +50,9 @@ namespace VehicleManagement.Data
                     .WithMany(c => c.Vehicles)
                     .HasForeignKey(v => v.CustomerId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                // Feature 10: Index for vehicle number search
+                e.HasIndex(v => v.VehicleNumber).HasDatabaseName("IX_Vehicle_VehicleNumber");
             });
 
             modelBuilder.Entity<SalesInvoice>(e =>

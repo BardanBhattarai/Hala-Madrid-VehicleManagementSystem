@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using VehicleManagement.Data;
+using VehicleManagement.Middleware;
+using VehicleManagement.Repositories;
 using VehicleManagement.Services;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -16,7 +18,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Register Services
+// ── Register Repositories ───────────────────────────────────────────
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+
+// ── Register Services ───────────────────────────────────────────────
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IPartService, PartService>();
@@ -24,6 +29,7 @@ builder.Services.AddScoped<IVendorService, VendorService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+builder.Services.AddScoped<IEmailService, EmailService>();  // Feature 11
 
 // builder.Services.AddAuthentication("Bearer").AddJwtBearer();
 // builder.Services.AddAuthorization();
@@ -43,6 +49,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Global exception handling middleware — catches all unhandled exceptions
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseCors("AllowReactApp");
 
