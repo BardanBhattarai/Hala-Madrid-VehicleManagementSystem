@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import partsApi from '../services/partsApi';
 import { 
   Plus, Edit, Trash2, Package, Tag, 
-  DollarSign, Hash, X, Check, Loader2, AlertCircle 
+  DollarSign, Hash, X, Check, Loader2, AlertCircle, Search 
 } from 'lucide-react';
+import Pagination from '../shared/components/Pagination';
 
 const PartsManagement = () => {
   const [partsList, setPartsList] = useState([]);
@@ -11,6 +12,15 @@ const PartsManagement = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   
+  // Pagination & Sorting state
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortDescending, setSortDescending] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   // Modal state
   const [showModal, setShowModal] = useState(false);
   const [editingPart, setEditingPart] = useState(null);
@@ -21,21 +31,29 @@ const PartsManagement = () => {
     stockQuantity: ''
   });
 
-  const fetchParts = async () => {
+  const fetchParts = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await partsApi.getAllParts();
-      setPartsList(response.data);
+      const response = await partsApi.getAllParts({
+        pageNumber, pageSize, searchTerm, sortBy, sortDescending
+      });
+      const data = response.data.data;
+      setPartsList(data?.items || []);
+      setTotalRecords(data?.totalRecords || 0);
+      setTotalPages(data?.totalPages || 1);
     } catch (err) {
       setError("Failed to fetch parts inventory. Please ensure the backend is running.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageNumber, pageSize, searchTerm, sortBy, sortDescending]);
 
   useEffect(() => {
-    fetchParts();
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      fetchParts();
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
+  }, [fetchParts]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -131,6 +149,45 @@ const PartsManagement = () => {
 
       {/* Parts Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        {/* Search and Filter */}
+        <div className="bg-white p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search parts by name, category..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPageNumber(1);
+              }}
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-auto">
+            <span className="text-sm text-slate-500 font-medium">Sort by:</span>
+            <select 
+              value={`${sortBy}-${sortDescending}`}
+              onChange={(e) => {
+                const [sort, desc] = e.target.value.split('-');
+                setSortBy(sort);
+                setSortDescending(desc === 'true');
+                setPageNumber(1);
+              }}
+              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+            >
+              <option value="name-false">Name (A-Z)</option>
+              <option value="name-true">Name (Z-A)</option>
+              <option value="category-false">Category (A-Z)</option>
+              <option value="price-true">Highest Price</option>
+              <option value="price-false">Lowest Price</option>
+              <option value="stock-false">Lowest Stock</option>
+              <option value="stock-true">Highest Stock</option>
+            </select>
+          </div>
+        </div>
+
         {loading ? (
           <div className="flex flex-col items-center justify-center h-64">
             <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
@@ -203,6 +260,17 @@ const PartsManagement = () => {
               </tbody>
             </table>
           </div>
+        )}
+        
+        {partsList.length > 0 && (
+          <Pagination
+            currentPage={pageNumber}
+            totalPages={totalPages}
+            onPageChange={setPageNumber}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
+            totalRecords={totalRecords}
+          />
         )}
       </div>
 

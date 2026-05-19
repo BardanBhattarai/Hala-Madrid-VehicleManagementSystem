@@ -14,8 +14,42 @@ public class VendorService : IVendorService
 
     public VendorService(AppDbContext db) => _db = db;
 
-    public async Task<List<VendorDto>> GetAllAsync()
-        => await _db.Vendors.Select(v => MapToDto(v)).ToListAsync();
+    public async Task<PaginatedResponseDto<VendorDto>> GetAllAsync(PaginationParamsDto param)
+    {
+        var query = _db.Vendors.AsNoTracking();
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(param.SearchTerm))
+        {
+            var search = param.SearchTerm.ToLower();
+            query = query.Where(v => v.VendorName.ToLower().Contains(search) || 
+                                     (v.CompanyName != null && v.CompanyName.ToLower().Contains(search)));
+        }
+
+        // Sort
+        if (!string.IsNullOrWhiteSpace(param.SortBy))
+        {
+            query = param.SortBy.ToLower() switch
+            {
+                "name" => param.SortDescending ? query.OrderByDescending(v => v.VendorName) : query.OrderBy(v => v.VendorName),
+                "company" => param.SortDescending ? query.OrderByDescending(v => v.CompanyName) : query.OrderBy(v => v.CompanyName),
+                _ => param.SortDescending ? query.OrderByDescending(v => v.CreatedAt) : query.OrderBy(v => v.CreatedAt)
+            };
+        }
+        else
+        {
+            query = param.SortDescending ? query.OrderByDescending(v => v.CreatedAt) : query.OrderBy(v => v.CreatedAt);
+        }
+
+        var totalRecords = await query.CountAsync();
+        
+        var items = await query
+            .Skip((param.PageNumber - 1) * param.PageSize)
+            .Take(param.PageSize)
+            .ToListAsync();
+
+        return new PaginatedResponseDto<VendorDto>(items.Select(MapToDto).ToList(), totalRecords, param.PageNumber, param.PageSize);
+    }
 
     public async Task<VendorDto> GetByIdAsync(int id)
     {

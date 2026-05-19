@@ -7,7 +7,7 @@ namespace VehicleManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    // [Authorize(Roles = "Admin")] // Uncomment when authentication is fully set up
+    [Authorize(Roles = "Admin")]
     public class ReportsController : ControllerBase
     {
         private readonly IReportService _reportService;

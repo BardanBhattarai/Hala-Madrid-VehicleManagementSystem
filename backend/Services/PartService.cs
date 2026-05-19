@@ -16,9 +16,39 @@ namespace VehicleManagement.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<PartResponseDto>> GetAllPartsAsync()
+        public async Task<PaginatedResponseDto<PartResponseDto>> GetAllPartsAsync(PaginationParamsDto param)
         {
-            return await _context.Parts
+            var query = _context.Parts.AsNoTracking().AsQueryable();
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(param.SearchTerm))
+            {
+                var search = param.SearchTerm.ToLower();
+                query = query.Where(p => p.PartName.ToLower().Contains(search) || 
+                                         (p.Category != null && p.Category.ToLower().Contains(search)));
+            }
+
+            // Sort
+            if (!string.IsNullOrWhiteSpace(param.SortBy))
+            {
+                query = param.SortBy.ToLower() switch
+                {
+                    "name" => param.SortDescending ? query.OrderByDescending(p => p.PartName) : query.OrderBy(p => p.PartName),
+                    "price" => param.SortDescending ? query.OrderByDescending(p => p.UnitPrice) : query.OrderBy(p => p.UnitPrice),
+                    "stock" => param.SortDescending ? query.OrderByDescending(p => p.StockQuantity) : query.OrderBy(p => p.StockQuantity),
+                    _ => param.SortDescending ? query.OrderByDescending(p => p.CreatedAt) : query.OrderBy(p => p.CreatedAt)
+                };
+            }
+            else
+            {
+                query = param.SortDescending ? query.OrderByDescending(p => p.CreatedAt) : query.OrderBy(p => p.CreatedAt);
+            }
+
+            var totalRecords = await query.CountAsync();
+            
+            var items = await query
+                .Skip((param.PageNumber - 1) * param.PageSize)
+                .Take(param.PageSize)
                 .Select(p => new PartResponseDto
                 {
                     Id = p.Id,
@@ -29,6 +59,8 @@ namespace VehicleManagement.Services
                     CreatedAt = p.CreatedAt
                 })
                 .ToListAsync();
+
+            return new PaginatedResponseDto<PartResponseDto>(items, totalRecords, param.PageNumber, param.PageSize);
         }
 
         public async Task<PartResponseDto?> GetPartByIdAsync(int id)

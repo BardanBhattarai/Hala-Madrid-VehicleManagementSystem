@@ -8,8 +8,7 @@ namespace VehicleManagement.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// MERGE: Uncomment after JWT auth is configured by auth team member
-// [Authorize(Roles = "Staff")]
+[Authorize]
 public class CustomersController : ControllerBase
 {
     private readonly ICustomerService _service;
@@ -17,6 +16,7 @@ public class CustomersController : ControllerBase
     public CustomersController(ICustomerService service) => _service = service;
 
     [HttpPost("register-with-vehicle")]
+    [AllowAnonymous]
     public async Task<IActionResult> RegisterWithVehicle([FromBody] RegisterCustomerWithVehicleDto dto)
     {
         try
@@ -33,13 +33,15 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [Authorize(Roles = "Admin,Staff")]
+    public async Task<IActionResult> GetAll([FromQuery] PaginationParamsDto param)
     {
-        var customers = await _service.GetAllAsync();
-        return Ok(ApiResponse<List<CustomerDto>>.SuccessResponse(customers));
+        var customers = await _service.GetAllAsync(param);
+        return Ok(ApiResponse<PaginatedResponseDto<CustomerDto>>.SuccessResponse(customers));
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> GetById(int id)
     {
         try
@@ -54,6 +56,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpPost("{id:int}/vehicles")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> AddVehicle(int id, [FromBody] VehicleCreateDto dto)
     {
         try
@@ -68,6 +71,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet("{id:int}/profile")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> GetProfile(int id)
     {
         try
@@ -82,6 +86,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet("{id:int}/vehicles")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> GetVehicles(int id)
     {
         try
@@ -96,6 +101,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet("{id:int}/purchase-history")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> GetPurchaseHistory(int id)
     {
         try
