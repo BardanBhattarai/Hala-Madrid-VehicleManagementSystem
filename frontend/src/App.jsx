@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
 import { 
-  LayoutDashboard, Users, LogOut, Car, 
+  LayoutDashboard, Users, LogOut, Car, Menu, X,
   Package, Truck, UserCircle, FileText, ShoppingCart, CalendarPlus, Calendar,
   Star, LogIn, Bell
 } from 'lucide-react';
@@ -25,9 +25,15 @@ const SidebarLink = ({ to, icon: Icon, label, active }) => (
 function App() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
 
+  // Auto-close sidebar on route change for clean mobile transition
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [location.pathname]);
+ 
   const getMenuItems = () => {
     if (!user) return [];
 
@@ -35,11 +41,15 @@ function App() {
       case 'Admin':
         return [
           {
-            category: 'Admin',
+            category: 'Admin Control',
             links: [
               { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', active: location.pathname === '/admin' || location.pathname === '/' },
+              { to: '/customers', icon: UserCircle, label: 'Customers', active: location.pathname.startsWith('/customers') },
+              { to: '/staff-mgmt', icon: Users, label: 'Staff', active: location.pathname === '/staff-mgmt' },
               { to: '/vendors', icon: Truck, label: 'Vendors', active: location.pathname.startsWith('/vendors') },
-              { to: '/staff-mgmt', icon: Users, label: 'Staff Management', active: location.pathname === '/staff-mgmt' },
+              { to: '/appointments', icon: Calendar, label: 'Appointments', active: location.pathname.startsWith('/appointments') },
+              { to: '/parts', icon: Package, label: 'Inventory', active: location.pathname.startsWith('/parts') },
+              { to: '/sales-invoices', icon: ShoppingCart, label: 'Sales', active: location.pathname.startsWith('/sales-invoices') && location.pathname !== '/staff' },
               { to: '/reports', icon: FileText, label: 'Reports', active: location.pathname === '/reports' },
               { to: '/notifications', icon: Bell, label: 'Notifications', active: location.pathname === '/notifications' }
             ]
@@ -85,10 +95,42 @@ function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
-      {/* Sidebar */}
-      <div className="w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex flex-col z-20 relative">
-        <div className="p-8 flex items-center gap-4">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 font-sans">
+      
+      {/* Mobile Navigation Header */}
+      <div className="lg:hidden flex items-center justify-between px-6 py-4 bg-white/95 border-b border-slate-200 z-30 sticky top-0 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/30">
+            <Car className="text-white w-5.5 h-5.5" />
+          </div>
+          <h2 className="text-xl font-black text-slate-800 tracking-tight">
+            Hala <span className="text-indigo-600">Madrid</span>
+          </h2>
+        </div>
+        <button 
+          onClick={() => setIsMobileOpen(!isMobileOpen)}
+          className="p-2 text-slate-500 hover:text-indigo-600 rounded-xl hover:bg-slate-100 transition-all duration-200"
+          aria-label="Toggle Navigation Menu"
+        >
+          {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Mobile Backdrop Overlay */}
+      {isMobileOpen && (
+        <div 
+          onClick={() => setIsMobileOpen(false)}
+          className="fixed inset-0 bg-slate-900/35 backdrop-blur-xs z-30 lg:hidden animate-in fade-in duration-200"
+        />
+      )}
+
+      {/* Responsive Sidebar */}
+      <div className={`
+        fixed inset-y-0 left-0 w-72 bg-white/95 backdrop-blur-xl border-r border-slate-200 shadow-2xl lg:shadow-[4px_0_24px_rgba(0,0,0,0.02)] 
+        flex flex-col z-40 lg:z-20 transition-transform duration-300 ease-out lg:translate-x-0 lg:static lg:h-screen lg:sticky lg:top-0
+        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="p-8 hidden lg:flex items-center gap-4 border-b border-slate-50">
           <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
             <Car className="text-white w-7 h-7" />
           </div>
@@ -97,7 +139,7 @@ function App() {
           </h2>
         </div>
 
-        <nav className="flex-1 mt-2 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
+        <nav className="flex-1 mt-6 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
           {getMenuItems().map((cat, catIdx) => (
             <div key={cat.category} className={catIdx > 0 ? 'mt-4 border-t border-slate-100 pt-4' : ''}>
               <div className="px-8 py-3 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">
@@ -117,7 +159,7 @@ function App() {
         </nav>
 
         {user && (
-          <div className="p-5 m-4 mt-auto rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+          <div className="p-5 m-4 mt-auto rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between shrink-0">
             <div className="flex flex-col overflow-hidden">
               <span className="text-sm font-bold text-slate-800 truncate">{user.fullName}</span>
               <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mt-0.5">{user.role}</span>
@@ -131,21 +173,10 @@ function App() {
             </button>
           </div>
         )}
-        {!user && (
-          <div className="p-6 border-t border-slate-100">
-            <Link 
-              to="/login"
-              className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-md hover:shadow-lg hover:shadow-indigo-600/20 transition-all duration-200"
-            >
-              <LogIn className="w-4 h-4" />
-              Sign In
-            </Link>
-          </div>
-        )}
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-slate-50/50">
+      {/* Main Content Pane */}
+      <div className="flex-1 overflow-auto bg-slate-50/50 min-h-screen">
         <AppRoutes />
       </div>
     </div>
