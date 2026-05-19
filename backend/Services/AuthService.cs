@@ -65,6 +65,25 @@ namespace VehicleManagement.Services
 
                 await _userManager.AddToRoleAsync(user, model.Role);
 
+                if (model.Role == "Customer")
+                {
+                    var existingCustomer = await _db.Customers.FirstOrDefaultAsync(c => c.Email == model.Email);
+                    if (existingCustomer == null)
+                    {
+                        var newCustomer = new Customer
+                        {
+                            FullName = model.FullName,
+                            Email = model.Email,
+                            PhoneNumber = "",
+                            Address = "",
+                            CreditBalance = 0,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _db.Customers.Add(newCustomer);
+                        await _db.SaveChangesAsync();
+                    }
+                }
+
                 // Generate JWT Token
                 var token = await GenerateJwtTokenAsync(user);
 
@@ -95,6 +114,26 @@ namespace VehicleManagement.Services
                 if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
                 {
                     var token = await GenerateJwtTokenAsync(user);
+
+                    if (user.Role == "Customer")
+                    {
+                        var existingCustomer = await _db.Customers.FirstOrDefaultAsync(c => c.Email == user.Email);
+                        if (existingCustomer == null)
+                        {
+                            var newCustomer = new Customer
+                            {
+                                FullName = user.FullName,
+                                Email = user.Email!,
+                                PhoneNumber = "",
+                                Address = "",
+                                CreditBalance = 0,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _db.Customers.Add(newCustomer);
+                            await _db.SaveChangesAsync();
+                        }
+                    }
+
                     var customer = await _db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Email == user.Email);
                     var responseDto = new AuthResponseDto
                     {
@@ -123,6 +162,25 @@ namespace VehicleManagement.Services
                 if (user == null)
                 {
                     return ApiResponse<AuthResponseDto>.Fail("User not found", new List<string>(), 404);
+                }
+
+                if (user.Role == "Customer")
+                {
+                    var existingCustomer = await _db.Customers.FirstOrDefaultAsync(c => c.Email == user.Email);
+                    if (existingCustomer == null)
+                    {
+                        var newCustomer = new Customer
+                        {
+                            FullName = user.FullName,
+                            Email = user.Email!,
+                            PhoneNumber = "",
+                            Address = "",
+                            CreditBalance = 0,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _db.Customers.Add(newCustomer);
+                        await _db.SaveChangesAsync();
+                    }
                 }
 
                 var customer = await _db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Email == user.Email);
