@@ -66,7 +66,7 @@ export default function AppointmentBooking() {
 
       try {
         const res = await getAllCustomers();
-        setCustomers(res.data.data || res.data);
+        setCustomers(res.data.data?.items || res.data.items || res.data.data || []);
       } catch {
         setError('Failed to load customers. Please ensure the backend is running.');
       } finally {

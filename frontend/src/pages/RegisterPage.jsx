@@ -5,6 +5,8 @@ import InputField from '../shared/components/InputField';
 import Button from '../shared/components/Button';
 import AlertMessage from '../shared/components/AlertMessage';
 import { Car } from 'lucide-react';
+import logoImg from '../logo/LOGO.png';
+import TransparentLogo from '../shared/components/TransparentLogo';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
@@ -112,8 +114,8 @@ export default function RegisterPage() {
         <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl" />
         
         <div className="relative z-10 flex flex-col items-center text-white max-w-lg text-center px-10">
-          <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-8 border border-white/20 shadow-2xl">
-            <Car className="w-10 h-10 text-white" />
+          <div className="mb-8 flex items-center justify-center">
+            <TransparentLogo src={logoImg} alt="FleetFlow Logo" className="w-32 h-32 object-contain" />
           </div>
           <h1 className="text-5xl font-black mb-6 tracking-tight leading-tight">
             Join FleetFlow <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-indigo-200">Today</span>
@@ -128,8 +130,8 @@ export default function RegisterPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-24 relative">
         <div className="w-full max-w-md">
           <div className="mb-10 text-center lg:text-left animate-in fade-in duration-300">
-            <div className="lg:hidden w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-600/20">
-              <Car className="w-8 h-8 text-white" />
+            <div className="lg:hidden flex items-center justify-center mb-6">
+              <TransparentLogo src={logoImg} alt="FleetFlow Logo" className="w-24 h-24 object-contain" />
             </div>
             <h2 className="text-3xl font-black text-slate-800 tracking-tight">Create an account</h2>
             <p className="text-slate-500 mt-3 text-sm font-medium">

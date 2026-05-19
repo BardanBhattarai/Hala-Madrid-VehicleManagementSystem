@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Package, User, Clock, AlertCircle, CheckCircle, XCircle, RefreshCw, Loader2, PackageX } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Package, User, Clock, AlertCircle, CheckCircle, XCircle, RefreshCw, Loader2, PackageX, Plus } from 'lucide-react';
 import partRequestApi from '../../../services/partRequestApi';
 import AlertMessage from '../../../shared/components/AlertMessage';
 import Pagination from '../../../shared/components/Pagination';
+import { useAuth } from '../../../shared/context/AuthContext';
 
 const PartRequestList = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,14 +28,22 @@ const PartRequestList = () => {
     try {
       setLoading(true);
       setError('');
-      const filterBy = statusFilter === 'All' ? '' : statusFilter;
-      const response = await partRequestApi.getRequests({
-        pageNumber, pageSize, searchTerm, filterBy, sortBy, sortDescending
-      });
-      const data = response.data.data;
-      setRequests(data?.items || []);
-      setTotalRecords(data?.totalRecords || 0);
-      setTotalPages(data?.totalPages || 1);
+      if (user?.role === 'Customer') {
+        const response = await partRequestApi.getRequestsByCustomer(user.customerId || 0);
+        const data = response.data.data || [];
+        setRequests(data);
+        setTotalRecords(data.length);
+        setTotalPages(1);
+      } else {
+        const filterBy = statusFilter === 'All' ? '' : statusFilter;
+        const response = await partRequestApi.getRequests({
+          pageNumber, pageSize, searchTerm, filterBy, sortBy, sortDescending
+        });
+        const data = response.data.data;
+        setRequests(data?.items || []);
+        setTotalRecords(data?.totalRecords || 0);
+        setTotalPages(data?.totalPages || 1);
+      }
     } catch (err) {
       console.error('Error fetching part requests:', err);
       setError(err.userMessage || 'Failed to load part requests. Please check that the backend is running.');
@@ -95,6 +107,12 @@ const PartRequestList = () => {
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Part Requests</h1>
           <p className="text-slate-500 mt-1">Manage customer part requests.</p>
         </div>
+        <button
+          onClick={() => navigate('/parts/requests/new')}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-5 py-3 rounded-2xl shadow-lg shadow-indigo-100 flex items-center gap-2 text-sm transition-all"
+        >
+          <Plus className="w-4 h-4" /> Request Part
+        </button>
       </div>
 
       {error && (
@@ -167,7 +185,7 @@ const PartRequestList = () => {
               <th className="px-6 py-4">Part Request</th>
               <th className="px-6 py-4">Quantity</th>
               <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-right">Actions</th>
+              {user?.role !== 'Customer' && <th className="px-6 py-4 text-right">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -198,18 +216,20 @@ const PartRequestList = () => {
                   </td>
                   <td className="px-6 py-4 font-medium">{r.quantity}</td>
                   <td className="px-6 py-4">{getStatusBadge(r.status)}</td>
-                  <td className="px-6 py-4 text-right">
-                    <select
-                      className="text-sm border border-slate-300 rounded-lg px-2 py-1 outline-none bg-white shadow-sm focus:border-indigo-500"
-                      value={r.status}
-                      onChange={(e) => handleStatusChange(r.id, e.target.value)}
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="Ordered">Ordered</option>
-                      <option value="Available">Available</option>
-                      <option value="Rejected">Rejected</option>
-                    </select>
-                  </td>
+                  {user?.role !== 'Customer' && (
+                    <td className="px-6 py-4 text-right">
+                      <select
+                        className="text-sm border border-slate-300 rounded-lg px-2 py-1 outline-none bg-white shadow-sm focus:border-indigo-500"
+                        value={r.status}
+                        onChange={(e) => handleStatusChange(r.id, e.target.value)}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Ordered">Ordered</option>
+                        <option value="Available">Available</option>
+                        <option value="Rejected">Rejected</option>
+                      </select>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

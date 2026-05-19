@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Calendar, 
@@ -10,7 +11,8 @@ import {
   XCircle,
   Clock3,
   RefreshCw,
-  CalendarX
+  CalendarX,
+  Plus
 } from 'lucide-react';
 import appointmentApi from '../services/appointmentApi';
 import AlertMessage from '../shared/components/AlertMessage';
@@ -18,6 +20,7 @@ import Pagination from '../shared/components/Pagination';
 import { useAuth } from '../shared/context/AuthContext';
 
 const AppointmentList = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -130,6 +133,14 @@ const AppointmentList = () => {
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Appointments</h1>
           <p className="text-slate-500 mt-1">Manage and view all service appointments.</p>
         </div>
+        {user?.role === 'Customer' && (
+          <button
+            onClick={() => navigate('/appointments/book')}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-5 py-3 rounded-2xl shadow-lg shadow-indigo-100 flex items-center gap-2 text-sm transition-all"
+          >
+            <Plus className="w-4 h-4" /> Book Appointment
+          </button>
+        )}
       </div>
 
       {error && (

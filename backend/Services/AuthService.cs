@@ -135,12 +135,15 @@ namespace VehicleManagement.Services
                     }
 
                     var customer = await _db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Email == user.Email);
+                    var userRoles = await _userManager.GetRolesAsync(user);
+                    var activeRole = userRoles.FirstOrDefault() ?? user.Role;
+
                     var responseDto = new AuthResponseDto
                     {
                         Token = token,
                         Email = user.Email!,
                         FullName = user.FullName,
-                        Role = user.Role,
+                        Role = activeRole,
                         CustomerId = customer?.Id
                     };
                     return ApiResponse<AuthResponseDto>.SuccessResponse(responseDto, "Login successful");
@@ -184,12 +187,15 @@ namespace VehicleManagement.Services
                 }
 
                 var customer = await _db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Email == user.Email);
+                var userRoles = await _userManager.GetRolesAsync(user);
+                var activeRole = userRoles.FirstOrDefault() ?? user.Role;
+
                 var responseDto = new AuthResponseDto
                 {
                     Token = "", // Client already has the token
                     Email = user.Email!,
                     FullName = user.FullName,
-                    Role = user.Role,
+                    Role = activeRole,
                     CustomerId = customer?.Id
                 };
                 return ApiResponse<AuthResponseDto>.SuccessResponse(responseDto, "User retrieved successfully");

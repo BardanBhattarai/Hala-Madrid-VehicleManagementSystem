@@ -8,20 +8,20 @@
   font-weight: 400;
   
   /* Force Light Mode / High Contrast */
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #F7F8F6;
+  color: #1A1D18;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f8fafc; /* Slate 50 */
+  background-color: #F7F8F6; /* Slate 50 fallback */
 }
 
 #root {
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: #F7F8F6;
 }
 
 /* Ensure nothing is transparent by default if it should have a background */
@@ -30,9 +30,8 @@ body {
   opacity: 1 !important;
 }
 
-/* Global text color override to ensure it's not washed out */
 h1, h2, h3, h4, h5, h6 {
-  color: #0f172a !important; /* Slate 900 */
+  color: #1A1D18; /* Warm Dark Neutral */
 }
 
 p, span, label, td, th {

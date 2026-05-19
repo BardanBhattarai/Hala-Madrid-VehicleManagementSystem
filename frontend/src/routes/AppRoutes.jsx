@@ -11,6 +11,7 @@ import AdminReports from '../pages/AdminReports';
 import StaffManagement from '../pages/StaffManagement';
 import AdminDashboard from '../pages/AdminDashboard';
 import PartsManagementPage from '../pages/PartsManagement';
+import CustomerReports from '../pages/CustomerReports';
 
 // Tasks 5-8 pages
 import VendorList from '../features/vendors/pages/VendorList';
@@ -32,6 +33,8 @@ import PurchaseInvoice from '../pages/PurchaseInvoice';
 // Appointment Booking
 import AppointmentBooking from '../pages/AppointmentBooking';
 import AppointmentList from '../pages/AppointmentList';
+import CustomerDashboard from '../pages/CustomerDashboard';
+import StaffDashboard from '../pages/StaffDashboard';
 
 // Reviews
 import ReviewList from '../pages/ReviewList';
@@ -80,11 +83,12 @@ export default function AppRoutes() {
 
         {/* Dynamic Redirection Targets */}
         <Route path="/admin" element={<RoleProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></RoleProtectedRoute>} />
-        <Route path="/staff" element={<ProtectedRoute allowedRoles={['Admin', 'Staff']}><SalesInvoiceList /></ProtectedRoute>} />
-        <Route path="/customer" element={<ProtectedRoute allowedRoles={['Admin', 'Staff', 'Customer']}><AppointmentList /></ProtectedRoute>} />
+        <Route path="/staff" element={<ProtectedRoute allowedRoles={['Admin', 'Staff']}><StaffDashboard /></ProtectedRoute>} />
+        <Route path="/customer" element={<ProtectedRoute allowedRoles={['Admin', 'Staff', 'Customer']}><CustomerDashboard /></ProtectedRoute>} />
 
         {/* Task 1-4: Admin Features */}
         <Route path="/reports" element={<ProtectedRoute allowedRoles={['Admin']}><AdminReports /></ProtectedRoute>} />
+        <Route path="/customer-reports" element={<ProtectedRoute allowedRoles={['Admin', 'Staff']}><CustomerReports /></ProtectedRoute>} />
         <Route path="/staff-mgmt" element={<ProtectedRoute allowedRoles={['Admin']}><StaffManagement /></ProtectedRoute>} />
         <Route path="/parts" element={<ProtectedRoute allowedRoles={['Admin', 'Staff']}><PartsManagementPage /></ProtectedRoute>} />
         <Route path="/parts/requests" element={<ProtectedRoute><PartRequestList /></ProtectedRoute>} />

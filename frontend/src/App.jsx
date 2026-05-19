@@ -4,9 +4,11 @@ import AppRoutes from './routes/AppRoutes';
 import { 
   LayoutDashboard, Users, LogOut, Car, Menu, X,
   Package, Truck, UserCircle, FileText, ShoppingCart, CalendarPlus, Calendar,
-  Star, LogIn, Bell
+  Star, LogIn, Bell, BarChart3
 } from 'lucide-react';
 import { useAuth } from './shared/context/AuthContext';
+import logoImg from './logo/LOGO.png';
+import TransparentLogo from './shared/components/TransparentLogo';
 
 const SidebarLink = ({ to, icon: Icon, label, active }) => (
   <Link 
@@ -51,6 +53,7 @@ function App() {
               { to: '/parts', icon: Package, label: 'Inventory', active: location.pathname.startsWith('/parts') },
               { to: '/sales-invoices', icon: ShoppingCart, label: 'Sales', active: location.pathname.startsWith('/sales-invoices') && location.pathname !== '/staff' },
               { to: '/reports', icon: FileText, label: 'Reports', active: location.pathname === '/reports' },
+              { to: '/customer-reports', icon: BarChart3, label: 'Customer Reports', active: location.pathname === '/customer-reports' },
               { to: '/notifications', icon: Bell, label: 'Notifications', active: location.pathname === '/notifications' }
             ]
           }
@@ -63,6 +66,7 @@ function App() {
               { to: '/staff', icon: LayoutDashboard, label: 'Dashboard', active: location.pathname === '/staff' },
               { to: '/sales-invoices', icon: FileText, label: 'Sales Invoices', active: location.pathname.startsWith('/sales-invoices') && location.pathname !== '/staff' },
               { to: '/customers', icon: UserCircle, label: 'Customers', active: location.pathname.startsWith('/customers') },
+              { to: '/customer-reports', icon: BarChart3, label: 'Customer Reports', active: location.pathname === '/customer-reports' },
               { to: '/appointments', icon: Calendar, label: 'Appointments', active: location.pathname.startsWith('/appointments') }
             ]
           }
@@ -74,6 +78,7 @@ function App() {
             links: [
               { to: '/customer', icon: LayoutDashboard, label: 'Dashboard', active: location.pathname === '/customer' },
               { to: '/appointments', icon: Calendar, label: 'My Appointments', active: location.pathname.startsWith('/appointments') && location.pathname !== '/customer' },
+              { to: '/parts/requests', icon: Package, label: 'Part Requests', active: location.pathname.startsWith('/parts/requests') },
               { to: '/reviews', icon: Star, label: 'My Reviews', active: location.pathname.startsWith('/reviews') },
               { to: `/customers/${user.customerId || ''}`, icon: UserCircle, label: 'My History', active: location.pathname.startsWith('/customers/') }
             ]
@@ -100,12 +105,8 @@ function App() {
       {/* Mobile Navigation Header */}
       <div className="lg:hidden flex items-center justify-between px-6 py-4 bg-white/95 border-b border-slate-200 z-30 sticky top-0 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/30">
-            <Car className="text-white w-5.5 h-5.5" />
-          </div>
-          <h2 className="text-xl font-black text-slate-800 tracking-tight">
-            Hala <span className="text-indigo-600">Madrid</span>
-          </h2>
+          <TransparentLogo src={logoImg} alt="FleetFlow Logo" className="w-10 h-10 object-contain" />
+          <span className="text-sm font-black text-slate-700 tracking-[0.15em] uppercase">Hala Madrid</span>
         </div>
         <button 
           onClick={() => setIsMobileOpen(!isMobileOpen)}
@@ -130,13 +131,11 @@ function App() {
         flex flex-col z-40 lg:z-20 transition-transform duration-300 ease-out lg:translate-x-0 lg:static lg:h-screen lg:sticky lg:top-0
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="p-8 hidden lg:flex items-center gap-4 border-b border-slate-50">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <Car className="text-white w-7 h-7" />
-          </div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">
-            Hala<br/><span className="text-indigo-600">Madrid</span>
-          </h2>
+        <div className="flex flex-col items-center justify-center p-8 border-b border-slate-100 text-center gap-2 hidden lg:flex">
+          <TransparentLogo src={logoImg} alt="FleetFlow Logo" className="w-32 h-32 object-contain" />
+          <span className="text-[13px] font-black text-slate-500 tracking-[0.25em] uppercase mt-1">
+            Hala Madrid
+          </span>
         </div>
 
         <nav className="flex-1 mt-6 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">

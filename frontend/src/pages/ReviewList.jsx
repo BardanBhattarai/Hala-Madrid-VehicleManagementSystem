@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Star, User, Calendar, RefreshCw, MessageSquareOff, Loader2, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Star, User, Calendar, RefreshCw, MessageSquareOff, Loader2, Search, Plus } from 'lucide-react';
 import reviewApi from '../services/reviewApi';
 import AlertMessage from '../shared/components/AlertMessage';
 import Pagination from '../shared/components/Pagination';
+import { useAuth } from '../shared/context/AuthContext';
 
 const ReviewList = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [average, setAverage] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -72,11 +76,21 @@ const ReviewList = () => {
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Service Reviews</h1>
           <p className="text-slate-500 mt-1">Customer feedback and ratings.</p>
         </div>
-        <div className="bg-indigo-50 px-4 py-2 rounded-xl flex items-center gap-3">
-          <span className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Average Rating</span>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-black text-indigo-600">{average}</span>
-            <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+        <div className="flex items-center gap-4">
+          {user?.role === 'Customer' && (
+            <button
+              onClick={() => navigate('/reviews/new')}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-5 py-3 rounded-2xl shadow-lg shadow-indigo-100 flex items-center gap-2 text-sm transition-all"
+            >
+              <Plus className="w-4 h-4" /> Write a Review
+            </button>
+          )}
+          <div className="bg-indigo-50 px-4 py-2 rounded-xl flex items-center gap-3">
+            <span className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Average Rating</span>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-black text-indigo-600">{average}</span>
+              <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+            </div>
           </div>
         </div>
       </div>

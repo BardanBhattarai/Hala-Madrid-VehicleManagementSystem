@@ -32,7 +32,7 @@ const ReviewForm = () => {
 
     setCustomersLoading(true);
     api.get('/customers').then(res => {
-      setCustomers(res.data.data || []);
+      setCustomers(res.data.data?.items || res.data.items || res.data.data || []);
     }).catch(err => {
       console.error('Failed to load customers:', err);
       setError('Failed to load customers. Please ensure the backend is running.');
