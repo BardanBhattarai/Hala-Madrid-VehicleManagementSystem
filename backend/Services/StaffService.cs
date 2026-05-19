@@ -1,10 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using VehicleManagement.Data;
 using VehicleManagement.DTOs;
-
-
-
 using VehicleManagement.Models;
+
 namespace VehicleManagement.Services
 {
     public class StaffService : IStaffService
@@ -94,6 +92,23 @@ namespace VehicleManagement.Services
             _context.Staffs.Remove(staff);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<StaffResponseDto?> LoginAsync(StaffLoginDto dto)
+        {
+            var staff = await _context.Staffs
+                .FirstOrDefaultAsync(s => s.Email == dto.Email && s.Password == dto.Password);
+
+            if (staff == null) return null;
+
+            return new StaffResponseDto
+            {
+                Id = staff.Id,
+                FullName = staff.FullName,
+                Email = staff.Email,
+                Role = staff.Role,
+                CreatedAt = staff.CreatedAt
+            };
         }
     }
 }

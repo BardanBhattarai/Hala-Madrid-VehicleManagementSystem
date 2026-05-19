@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using VehicleManagement.DTOs;
 using VehicleManagement.Services;
-
 using VehicleManagement.Models;
+
 namespace VehicleManagement.Controllers
 {
     [ApiController]
@@ -66,6 +66,17 @@ namespace VehicleManagement.Controllers
             if (!success) return NotFound(new { message = "Staff not found" });
 
             return Ok(new { message = "Staff deleted successfully" });
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<StaffResponseDto>> Login(StaffLoginDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var result = await _staffService.LoginAsync(dto);
+            if (result == null) return Unauthorized(new { message = "Invalid email or password" });
+
+            return Ok(result);
         }
     }
 }
