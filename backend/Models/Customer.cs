@@ -10,6 +10,9 @@ namespace VehicleManagement.Models
         public decimal CreditBalance { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        /// <summary>Hashed password for customer authentication (Feature 12).</summary>
+        public string PasswordHash { get; set; } = string.Empty;
+
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
         public ICollection<SalesInvoice> SalesInvoices { get; set; } = new List<SalesInvoice>();
     }

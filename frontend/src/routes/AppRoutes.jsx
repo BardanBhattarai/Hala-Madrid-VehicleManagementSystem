@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 // Tasks 1-4 pages
 import AdminReports from '../pages/AdminReports';
 import StaffManagement from '../pages/StaffManagement';
-import PartsManagement from '../pages/AdminReports'; // Placeholder if needed, but I'll use real ones
 
 // Tasks 5-8 pages
 import VendorList from '../features/vendors/pages/VendorList';
@@ -17,6 +16,10 @@ import SalesInvoiceDetails from '../features/salesInvoices/pages/SalesInvoiceDet
 // Import real PartsManagement
 import PartsManagementPage from '../pages/PartsManagement';
 import PurchaseInvoice from '../pages/PurchaseInvoice';
+
+// New feature pages
+import CustomerReports from '../features/customers/pages/CustomerReports';
+import SalesInvoiceList from '../features/salesInvoices/pages/SalesInvoiceList';
 
 export default function AppRoutes() {
   return (
@@ -42,8 +45,12 @@ export default function AppRoutes() {
         <Route path="/customers/:id" element={<CustomerProfile />} />
 
         {/* Task 7: Sales Invoices (Staff) */}
+        <Route path="/sales-invoices" element={<SalesInvoiceList />} />
         <Route path="/sales-invoices/new" element={<CreateSalesInvoice />} />
         <Route path="/sales-invoices/:id" element={<SalesInvoiceDetails />} />
+
+        {/* Feature 9: Customer Reports */}
+        <Route path="/customer-reports" element={<CustomerReports />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -4,3 +4,6 @@ export const createSalesInvoice = (data) => api.post('/sales-invoices', data);
 export const getAllSalesInvoices = () => api.get('/sales-invoices');
 export const getSalesInvoiceById = (id) => api.get(`/sales-invoices/${id}`);
 export const getInvoicesByCustomer = (customerId) => api.get(`/sales-invoices/customer/${customerId}`);
+
+// Feature 11: Resend Invoice Email
+export const resendInvoiceEmail = (id) => api.post(`/sales-invoices/${id}/resend-email`);
