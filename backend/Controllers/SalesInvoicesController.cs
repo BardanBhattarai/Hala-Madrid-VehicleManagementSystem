@@ -64,4 +64,24 @@ public class SalesInvoicesController : ControllerBase
         var invoices = await _service.GetByCustomerIdAsync(customerId);
         return Ok(ApiResponse<List<SalesInvoiceDto>>.SuccessResponse(invoices));
     }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // FEATURE 11: Resend Invoice Email
+    // ═══════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// POST /api/sales-invoices/{id}/resend-email
+    /// Resends the invoice email to the customer's registered email address.
+    /// Sample response:
+    /// { "isSuccess": true, "message": "Invoice email sent successfully." }
+    /// </summary>
+    [HttpPost("{id:int}/resend-email")]
+    public async Task<IActionResult> ResendInvoiceEmail(int id)
+    {
+        var sent = await _service.ResendInvoiceEmailAsync(id);
+        if (sent)
+            return Ok(ApiResponse.SuccessResponse(new { InvoiceId = id }, "Invoice email sent successfully."));
+        else
+            return StatusCode(500, ApiResponse.Fail("Failed to send invoice email. Please try again later."));
+    }
 }
