@@ -1,20 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllCustomers } from '../api/customerApi';
-import { UserCircle, UserPlus, Loader2, AlertCircle, ChevronRight, Phone, Mail, Wallet } from 'lucide-react';
+import { UserCircle, UserPlus, Loader2, AlertCircle, ChevronRight, Phone, Mail, Wallet, Search } from 'lucide-react';
+import Pagination from '../../../shared/components/Pagination';
 
 export default function CustomerList() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Pagination & Search state
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('CreatedAt');
+  const [sortDescending, setSortDescending] = useState(true);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    getAllCustomers()
-      .then(res => setCustomers(res.data.data || res.data))
+  const fetchCustomers = useCallback(() => {
+    setLoading(true);
+    getAllCustomers({ pageNumber, pageSize, searchTerm, sortBy, sortDescending })
+      .then(res => {
+        const data = res.data.data;
+        setCustomers(data?.items || []);
+        setTotalRecords(data?.totalRecords || 0);
+        setTotalPages(data?.totalPages || 1);
+      })
       .catch(() => setError('Failed to load customers.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [pageNumber, pageSize, searchTerm, sortBy, sortDescending]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchCustomers();
+    }, 300); // 300ms debounce
+    
+    return () => clearTimeout(delayDebounceFn);
+  }, [fetchCustomers]);
 
   if (loading) {
     return (
@@ -49,6 +74,43 @@ export default function CustomerList() {
       )}
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        {/* Search and Filter Bar */}
+        <div className="bg-white p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search customers by name, email..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPageNumber(1);
+              }}
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-auto">
+            <span className="text-sm text-slate-500 font-medium">Sort by:</span>
+            <select 
+              value={`${sortBy}-${sortDescending}`}
+              onChange={(e) => {
+                const [sort, desc] = e.target.value.split('-');
+                setSortBy(sort);
+                setSortDescending(desc === 'true');
+                setPageNumber(1);
+              }}
+              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+            >
+              <option value="CreatedAt-true">Newest First</option>
+              <option value="CreatedAt-false">Oldest First</option>
+              <option value="fullname-false">Name (A-Z)</option>
+              <option value="fullname-true">Name (Z-A)</option>
+              <option value="creditbalance-true">Highest Balance</option>
+            </select>
+          </div>
+        </div>
+
         {customers.length === 0 ? (
           <div className="p-12 text-center text-slate-400 font-medium">
             No customers registered yet.
@@ -107,6 +169,17 @@ export default function CustomerList() {
               </tbody>
             </table>
           </div>
+        )}
+        
+        {customers.length > 0 && (
+          <Pagination
+            currentPage={pageNumber}
+            totalPages={totalPages}
+            onPageChange={setPageNumber}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
+            totalRecords={totalRecords}
+          />
         )}
       </div>
     </div>
