@@ -73,9 +73,13 @@ public class CustomerService : ICustomerService
         if (!string.IsNullOrWhiteSpace(param.SearchTerm))
         {
             var search = param.SearchTerm.ToLower();
+            bool isInt = int.TryParse(param.SearchTerm, out int searchId);
+
             query = query.Where(c => c.FullName.ToLower().Contains(search) || 
                                      c.Email.ToLower().Contains(search) || 
-                                     c.PhoneNumber.Contains(search));
+                                     c.PhoneNumber.Contains(search) ||
+                                     (isInt && c.Id == searchId) ||
+                                     _db.Vehicles.Any(v => v.CustomerId == c.Id && v.VehicleNumber.ToLower().Contains(search)));
         }
 
         // Sort
@@ -177,6 +181,23 @@ public class CustomerService : ICustomerService
             .ToListAsync();
 
         return invoices.Select(MapInvoiceToHistory).ToList();
+    }
+
+    public async Task<CustomerDto> UpdateProfileAsync(int id, CustomerUpdateDto dto)
+    {
+        var customer = await _db.Customers.FindAsync(id)
+            ?? throw new KeyNotFoundException($"Customer with id '{id}' was not found.");
+
+        customer.FullName = dto.FullName;
+        customer.PhoneNumber = dto.PhoneNumber;
+        customer.Email = dto.Email;
+        customer.Address = dto.Address;
+
+        await _db.SaveChangesAsync();
+
+        _logger.LogInformation("Customer profile {CustomerId} updated successfully.", id);
+
+        return MapCustomerToDto(customer);
     }
 
     private static CustomerDto MapCustomerToDto(Customer c) => new()

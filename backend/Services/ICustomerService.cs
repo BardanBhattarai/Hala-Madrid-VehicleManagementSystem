@@ -13,4 +13,5 @@ public interface ICustomerService
     Task<CustomerProfileDto> GetProfileAsync(int id);
     Task<List<VehicleDto>> GetVehiclesAsync(int id);
     Task<List<PurchaseHistoryDto>> GetPurchaseHistoryAsync(int id);
+    Task<CustomerDto> UpdateProfileAsync(int id, CustomerUpdateDto dto);
 }

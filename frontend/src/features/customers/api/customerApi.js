@@ -7,3 +7,4 @@ export const addVehicleToCustomer = (customerId, data) => api.post(`/customers/$
 export const getCustomerProfile = (id) => api.get(`/customers/${id}/profile`);
 export const getCustomerVehicles = (id) => api.get(`/customers/${id}/vehicles`);
 export const getCustomerPurchaseHistory = (id) => api.get(`/customers/${id}/purchase-history`);
+export const updateCustomerProfile = (id, data) => api.put(`/customers/${id}`, data);

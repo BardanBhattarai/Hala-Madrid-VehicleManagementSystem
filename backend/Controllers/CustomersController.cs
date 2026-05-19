@@ -114,4 +114,19 @@ public class CustomersController : ControllerBase
             return NotFound(ApiResponse<List<PurchaseHistoryDto>>.Fail(ex.Message));
         }
     }
+
+    [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
+    public async Task<IActionResult> UpdateProfile(int id, [FromBody] CustomerUpdateDto dto)
+    {
+        try
+        {
+            var updatedCustomer = await _service.UpdateProfileAsync(id, dto);
+            return Ok(ApiResponse<CustomerDto>.SuccessResponse(updatedCustomer, "Profile updated successfully."));
+        }
+        catch (System.Exception ex)
+        {
+            return BadRequest(ApiResponse<CustomerDto>.Fail(ex.Message));
+        }
+    }
 }

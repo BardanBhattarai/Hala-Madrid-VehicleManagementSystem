@@ -26,7 +26,12 @@ export default function CustomerProfile() {
       {profile && (
         <>
           <CustomerDetailsCard customer={profile.customer} vehicles={profile.vehicles} />
-          <h2 style={{ marginTop: '32px', marginBottom: '16px' }}>Purchase History</h2>
+          <h2 className="text-xl font-black text-slate-800 mt-10 mb-6 flex items-center gap-2">
+            Purchase & Service History
+            <span className="text-sm font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg">
+              {profile.purchaseHistory?.length || 0} Invoices
+            </span>
+          </h2>
           <PurchaseHistoryTable history={profile.purchaseHistory} />
         </>
       )}
