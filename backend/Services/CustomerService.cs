@@ -80,8 +80,28 @@ public class CustomerService : ICustomerService
         }
     }
 
-    public async Task<List<CustomerDto>> GetAllAsync()
-        => await _db.Customers.Select(c => MapCustomerToDto(c)).ToListAsync();
+    public async Task<PaginatedResponseDto<CustomerDto>> GetAllAsync(PaginationParamsDto param)
+    {
+        var query = _db.Customers.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(param.SearchTerm))
+        {
+            var term = param.SearchTerm.Trim().ToLowerInvariant();
+            query = query.Where(c => c.FullName.ToLower().Contains(term)
+                                     || c.PhoneNumber.ToLower().Contains(term)
+                                     || c.Email.ToLower().Contains(term));
+        }
+
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderBy(c => c.Id)
+            .Skip((param.PageNumber - 1) * param.PageSize)
+            .Take(param.PageSize)
+            .Select(c => MapCustomerToDto(c))
+            .ToListAsync();
+
+        return new PaginatedResponseDto<CustomerDto>(items, total, param.PageNumber, param.PageSize);
+    }
 
     public async Task<CustomerDto> GetByIdAsync(int id)
     {

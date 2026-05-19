@@ -66,6 +66,43 @@ public class EmailService : IEmailService
     }
 
     /// <summary>
+    /// Sends a raw HTML email with the provided subject and HTML body.
+    /// </summary>
+    public async Task<bool> SendEmailAsync(string toEmail, string subject, string htmlBody)
+    {
+      try
+      {
+        var smtpHost = _config["SmtpSettings:Host"] ?? "smtp.mailtrap.io";
+        var smtpPort = int.Parse(_config["SmtpSettings:Port"] ?? "587");
+        var smtpUser = _config["SmtpSettings:Username"] ?? "";
+        var smtpPass = _config["SmtpSettings:Password"] ?? "";
+        var fromEmail = _config["SmtpSettings:FromEmail"] ?? "noreply@vehicleparts.com";
+        var fromName = _config["SmtpSettings:FromName"] ?? "Vehicle Parts System";
+        var enableSsl = bool.Parse(_config["SmtpSettings:EnableSsl"] ?? "true");
+
+        using var message = new MailMessage();
+        message.From = new MailAddress(fromEmail, fromName);
+        message.To.Add(new MailAddress(toEmail));
+        message.Subject = subject;
+        message.Body = htmlBody;
+        message.IsBodyHtml = true;
+
+        using var client = new SmtpClient(smtpHost, smtpPort);
+        client.Credentials = new NetworkCredential(smtpUser, smtpPass);
+        client.EnableSsl = enableSsl;
+
+        await client.SendMailAsync(message);
+        _logger.LogInformation("Email sent successfully to {Email} (subject: {Subject})", toEmail, subject);
+        return true;
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Failed to send email to {Email} (subject: {Subject})", toEmail, subject);
+        return false;
+      }
+    }
+
+    /// <summary>
     /// Builds a professional HTML email template for the invoice.
     /// </summary>
     private static string BuildInvoiceHtml(string customerName, SalesInvoiceDto invoice)

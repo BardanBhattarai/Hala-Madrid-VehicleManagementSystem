@@ -133,12 +133,30 @@ public class SalesInvoiceService : ISalesInvoiceService
         }
     }
 
-    public async Task<List<SalesInvoiceDto>> GetAllAsync()
-        => await _db.SalesInvoices
+    public async Task<PaginatedResponseDto<SalesInvoiceDto>> GetAllAsync(PaginationParamsDto param)
+    {
+        var query = _db.SalesInvoices
             .Include(si => si.Customer)
             .Include(si => si.Items).ThenInclude(i => i.Part)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(param.SearchTerm))
+        {
+            var term = param.SearchTerm.Trim().ToLowerInvariant();
+            query = query.Where(si => (si.CustomerName ?? string.Empty).ToLower().Contains(term)
+                                       || si.Id.ToString().Contains(term));
+        }
+
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(si => si.InvoiceDate)
+            .Skip((param.PageNumber - 1) * param.PageSize)
+            .Take(param.PageSize)
             .Select(si => MapToDto(si))
             .ToListAsync();
+
+        return new PaginatedResponseDto<SalesInvoiceDto>(items, total, param.PageNumber, param.PageSize);
+    }
 
     public async Task<SalesInvoiceDto> GetByIdAsync(int id)
     {
