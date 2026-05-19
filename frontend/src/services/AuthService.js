@@ -2,6 +2,48 @@ import api from '../shared/api/axiosConfig';
 
 const TOKEN_KEY = 'token';
 
+/**
+ * Base64 JWT Token Decoder to parse the payload payload claims.
+ * @param {string} token - The JWT token.
+ * @returns {Object|null} Decoded JSON payload or null.
+ */
+export const decodeToken = (token) => {
+  try {
+    if (!token) return null;
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+
+    const decoded = JSON.parse(jsonPayload);
+    console.log('[DEBUG] Decoded JWT Token payload:', decoded);
+    return decoded;
+  } catch (error) {
+    console.error('[DEBUG] Failed to decode token:', error);
+    return null;
+  }
+};
+
+/**
+ * Helper to safely extract the role claim from JWT claims.
+ * Supports standard "role" claim and ASP.NET Core identity claim schemas.
+ * @param {Object} decodedToken - The decoded token payload.
+ * @returns {string} The extracted role name.
+ */
+export const extractRole = (decodedToken) => {
+  if (!decodedToken) return '';
+  const role =
+    decodedToken['role'] ||
+    decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+    '';
+  console.log('[DEBUG] Extracted Role from claims:', role);
+  return role;
+};
+
 export const AuthService = {
   /**
    * Log in user with credentials and cache the JWT token.
@@ -13,6 +55,10 @@ export const AuthService = {
     const data = response.data;
     if (data.isSuccess && data.data?.token) {
       localStorage.setItem(TOKEN_KEY, data.data.token);
+      console.log('[DEBUG] Login response payload:', data.data);
+      const decoded = decodeToken(data.data.token);
+      const extracted = extractRole(decoded);
+      console.log('[DEBUG] User successfully logged in. Extracted Role:', extracted);
     }
     return data;
   },
@@ -27,6 +73,10 @@ export const AuthService = {
     const data = response.data;
     if (data.isSuccess && data.data?.token) {
       localStorage.setItem(TOKEN_KEY, data.data.token);
+      console.log('[DEBUG] Registration response payload:', data.data);
+      const decoded = decodeToken(data.data.token);
+      const extracted = extractRole(decoded);
+      console.log('[DEBUG] User successfully registered. Extracted Role:', extracted);
     }
     return data;
   },
@@ -35,6 +85,7 @@ export const AuthService = {
    * Log out the current user by removing the JWT token from storage.
    */
   logout: () => {
+    console.log('[DEBUG] Clearing token from local storage. Logging out...');
     localStorage.removeItem(TOKEN_KEY);
   },
 
@@ -44,7 +95,17 @@ export const AuthService = {
    */
   getCurrentUser: async () => {
     const response = await api.get('/auth/me');
-    return response.data;
+    const data = response.data;
+    if (data.isSuccess && data.data) {
+      console.log('[DEBUG] GetCurrentUser profile from backend:', data.data);
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token) {
+        const decoded = decodeToken(token);
+        const extracted = extractRole(decoded);
+        console.log('[DEBUG] Token Role matches profile Role:', extracted === data.data.role);
+      }
+    }
+    return data;
   },
 
   /**
@@ -55,3 +116,4 @@ export const AuthService = {
     return localStorage.getItem(TOKEN_KEY);
   }
 };
+

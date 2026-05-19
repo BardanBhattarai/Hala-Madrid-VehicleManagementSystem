@@ -40,22 +40,31 @@ import NotificationList from '../pages/NotificationList';
 function DashboardRedirect() {
   const { user } = useAuth();
 
+  console.log('[DEBUG] DashboardRedirect execution context. User:', user);
+
   if (!user) {
+    console.log('[DEBUG] No authenticated user in context. Redirecting to /login');
     return <Navigate to="/login" replace />;
   }
 
+  console.log('[DEBUG] Redirect check for role:', user.role);
+
   if (user.role === 'Admin') {
-    return <AdminReports />;
+    console.log('[DEBUG] Role matches Admin. Redirecting to /admin');
+    return <Navigate to="/admin" replace />;
   }
 
   if (user.role === 'Staff') {
-    return <Navigate to="/sales-invoices" replace />;
+    console.log('[DEBUG] Role matches Staff. Redirecting to /staff');
+    return <Navigate to="/staff" replace />;
   }
 
   if (user.role === 'Customer') {
-    return <Navigate to="/appointments" replace />;
+    console.log('[DEBUG] Role matches Customer. Redirecting to /customer');
+    return <Navigate to="/customer" replace />;
   }
 
+  console.log('[DEBUG] Unrecognized user role. Redirecting to /login');
   return <Navigate to="/login" replace />;
 }
 
@@ -66,9 +75,14 @@ export default function AppRoutes() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
 
+        {/* Dynamic Redirection Targets */}
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['Admin']}><AdminReports /></ProtectedRoute>} />
+        <Route path="/staff" element={<ProtectedRoute allowedRoles={['Admin', 'Staff']}><SalesInvoiceList /></ProtectedRoute>} />
+        <Route path="/customer" element={<ProtectedRoute allowedRoles={['Admin', 'Staff', 'Customer']}><AppointmentList /></ProtectedRoute>} />
+
         {/* Task 1-4: Admin Features */}
         <Route path="/reports" element={<ProtectedRoute allowedRoles={['Admin']}><AdminReports /></ProtectedRoute>} />
-        <Route path="/staff" element={<ProtectedRoute allowedRoles={['Admin']}><StaffManagement /></ProtectedRoute>} />
+        <Route path="/staff-mgmt" element={<ProtectedRoute allowedRoles={['Admin']}><StaffManagement /></ProtectedRoute>} />
         <Route path="/parts" element={<ProtectedRoute allowedRoles={['Admin', 'Staff']}><PartsManagementPage /></ProtectedRoute>} />
         <Route path="/parts/requests" element={<ProtectedRoute><PartRequestList /></ProtectedRoute>} />
         <Route path="/parts/requests/new" element={<ProtectedRoute><PartRequestForm /></ProtectedRoute>} />

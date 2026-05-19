@@ -216,6 +216,7 @@ namespace VehicleManagement.Services
             foreach (var userRole in userRoles)
             {
                 authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                authClaims.Add(new Claim("role", userRole));
             }
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]!));

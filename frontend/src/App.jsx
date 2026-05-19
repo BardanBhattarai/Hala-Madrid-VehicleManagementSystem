@@ -37,9 +37,9 @@ function App() {
           {
             category: 'Admin',
             links: [
-              { to: '/', icon: LayoutDashboard, label: 'Dashboard', active: location.pathname === '/' },
+              { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', active: location.pathname === '/admin' || location.pathname === '/' },
               { to: '/vendors', icon: Truck, label: 'Vendors', active: location.pathname.startsWith('/vendors') },
-              { to: '/staff', icon: Users, label: 'Staff', active: location.pathname === '/staff' },
+              { to: '/staff-mgmt', icon: Users, label: 'Staff Management', active: location.pathname === '/staff-mgmt' },
               { to: '/reports', icon: FileText, label: 'Reports', active: location.pathname === '/reports' },
               { to: '/notifications', icon: Bell, label: 'Notifications', active: location.pathname === '/notifications' }
             ]
@@ -48,9 +48,10 @@ function App() {
       case 'Staff':
         return [
           {
-            category: 'Sales & Customers',
+            category: 'Staff Portal',
             links: [
-              { to: '/sales-invoices', icon: FileText, label: 'Sales', active: location.pathname.startsWith('/sales-invoices') },
+              { to: '/staff', icon: LayoutDashboard, label: 'Dashboard', active: location.pathname === '/staff' },
+              { to: '/sales-invoices', icon: FileText, label: 'Sales Invoices', active: location.pathname.startsWith('/sales-invoices') && location.pathname !== '/staff' },
               { to: '/customers', icon: UserCircle, label: 'Customers', active: location.pathname.startsWith('/customers') },
               { to: '/appointments', icon: Calendar, label: 'Appointments', active: location.pathname.startsWith('/appointments') }
             ]
@@ -61,7 +62,8 @@ function App() {
           {
             category: 'Customer Portal',
             links: [
-              { to: '/appointments', icon: Calendar, label: 'My Appointments', active: location.pathname.startsWith('/appointments') },
+              { to: '/customer', icon: LayoutDashboard, label: 'Dashboard', active: location.pathname === '/customer' },
+              { to: '/appointments', icon: Calendar, label: 'My Appointments', active: location.pathname.startsWith('/appointments') && location.pathname !== '/customer' },
               { to: '/reviews', icon: Star, label: 'My Reviews', active: location.pathname.startsWith('/reviews') },
               { to: `/customers/${user.customerId || ''}`, icon: UserCircle, label: 'My History', active: location.pathname.startsWith('/customers/') }
             ]
