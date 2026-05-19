@@ -7,7 +7,7 @@ namespace VehicleManagement.Services;
 public interface ISalesInvoiceService
 {
     Task<SalesInvoiceDto> CreateAsync(CreateSalesInvoiceDto dto);
-    Task<List<SalesInvoiceDto>> GetAllAsync();
+    Task<PaginatedResponseDto<SalesInvoiceDto>> GetAllAsync(PaginationParamsDto param);
     Task<SalesInvoiceDto> GetByIdAsync(int id);
     Task<List<SalesInvoiceDto>> GetByCustomerIdAsync(int customerId);
 }

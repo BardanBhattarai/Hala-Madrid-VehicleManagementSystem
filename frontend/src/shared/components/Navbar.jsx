@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const links = [
   { to: '/vendors', label: 'Vendors' },
@@ -9,6 +10,14 @@ const links = [
 ];
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <nav style={{
       backgroundColor: '#1e3a5f',
@@ -37,6 +46,46 @@ export default function Navbar() {
           {link.label}
         </NavLink>
       ))}
+      ))}
+
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {user ? (
+          <>
+            <span style={{ color: 'white', fontSize: '14px' }}>
+              Welcome, <span style={{ fontWeight: '600' }}>{user.fullName}</span> ({user.role})
+            </span>
+            <button
+              onClick={handleLogout}
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                border: 'none',
+                padding: '6px 12px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <NavLink
+              to="/login"
+              style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}
+            >
+              Login
+            </NavLink>
+            <NavLink
+              to="/register"
+              style={{ color: 'white', textDecoration: 'none', fontSize: '14px' }}
+            >
+              Register
+            </NavLink>
+          </>
+        )}
+      </div>
     </nav>
   );
 }

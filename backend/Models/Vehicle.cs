@@ -13,5 +13,6 @@ namespace VehicleManagement.Models
         public DateTime? LastServiceDate { get; set; }
 
         public Customer Customer { get; set; } = null!;
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     }
 }

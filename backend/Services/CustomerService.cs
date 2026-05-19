@@ -8,8 +8,13 @@ namespace VehicleManagement.Services;
 public class CustomerService : ICustomerService
 {
     private readonly AppDbContext _db;
+    private readonly ILogger<CustomerService> _logger;
 
-    public CustomerService(AppDbContext db) => _db = db;
+    public CustomerService(AppDbContext db, ILogger<CustomerService> logger)
+    {
+        _db = db;
+        _logger = logger;
+    }
 
     public async Task<CustomerDto> RegisterWithVehicleAsync(RegisterCustomerWithVehicleDto dto)
     {
@@ -46,29 +51,70 @@ public class CustomerService : ICustomerService
             await _db.SaveChangesAsync();
 
             await transaction.CommitAsync();
+
+            _logger.LogInformation("Customer {CustomerId} registered with Vehicle {VehicleId}",
+                customer.Id, vehicle.Id);
+
             return MapCustomerToDto(customer);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
+            _logger.LogError(ex, "Failed to register customer with vehicle");
             throw;
         }
     }
 
-    public async Task<List<CustomerDto>> GetAllAsync()
-        => await _db.Customers.Select(c => MapCustomerToDto(c)).ToListAsync();
+    public async Task<PaginatedResponseDto<CustomerDto>> GetAllAsync(PaginationParamsDto param)
+    {
+        var query = _db.Customers.AsNoTracking();
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(param.SearchTerm))
+        {
+            var search = param.SearchTerm.ToLower();
+            query = query.Where(c => c.FullName.ToLower().Contains(search) || 
+                                     c.Email.ToLower().Contains(search) || 
+                                     c.PhoneNumber.Contains(search));
+        }
+
+        // Sort
+        if (!string.IsNullOrWhiteSpace(param.SortBy))
+        {
+            query = param.SortBy.ToLower() switch
+            {
+                "fullname" => param.SortDescending ? query.OrderByDescending(c => c.FullName) : query.OrderBy(c => c.FullName),
+                "email" => param.SortDescending ? query.OrderByDescending(c => c.Email) : query.OrderBy(c => c.Email),
+                "creditbalance" => param.SortDescending ? query.OrderByDescending(c => c.CreditBalance) : query.OrderBy(c => c.CreditBalance),
+                _ => param.SortDescending ? query.OrderByDescending(c => c.CreatedAt) : query.OrderBy(c => c.CreatedAt)
+            };
+        }
+        else
+        {
+            query = param.SortDescending ? query.OrderByDescending(c => c.CreatedAt) : query.OrderBy(c => c.CreatedAt);
+        }
+
+        var totalRecords = await query.CountAsync();
+        
+        var items = await query
+            .Skip((param.PageNumber - 1) * param.PageSize)
+            .Take(param.PageSize)
+            .ToListAsync();
+
+        return new PaginatedResponseDto<CustomerDto>(items.Select(MapCustomerToDto).ToList(), totalRecords, param.PageNumber, param.PageSize);
+    }
 
     public async Task<CustomerDto> GetByIdAsync(int id)
     {
         var customer = await _db.Customers.FindAsync(id)
-            ?? throw new System.Exception($"Customer with id '{id}' was not found.");
+            ?? throw new KeyNotFoundException($"Customer with id '{id}' was not found.");
         return MapCustomerToDto(customer);
     }
 
     public async Task<VehicleDto> AddVehicleAsync(int customerId, VehicleCreateDto dto)
     {
         _ = await _db.Customers.FindAsync(customerId)
-            ?? throw new System.Exception($"Customer with id '{customerId}' was not found.");
+            ?? throw new KeyNotFoundException($"Customer with id '{customerId}' was not found.");
 
         var vehicle = new Vehicle
         {
@@ -83,18 +129,22 @@ public class CustomerService : ICustomerService
         };
         _db.Vehicles.Add(vehicle);
         await _db.SaveChangesAsync();
+
+        _logger.LogInformation("Vehicle {VehicleId} added to Customer {CustomerId}", vehicle.Id, customerId);
+
         return MapVehicleToDto(vehicle);
     }
 
     public async Task<CustomerProfileDto> GetProfileAsync(int id)
     {
         var customer = await _db.Customers
+            .AsNoTracking()
             .Include(c => c.Vehicles)
             .Include(c => c.SalesInvoices)
                 .ThenInclude(si => si.Items)
                     .ThenInclude(item => item.Part)
             .FirstOrDefaultAsync(c => c.Id == id)
-            ?? throw new System.Exception($"Customer with id '{id}' was not found.");
+            ?? throw new KeyNotFoundException($"Customer with id '{id}' was not found.");
 
         return new CustomerProfileDto
         {
@@ -107,8 +157,9 @@ public class CustomerService : ICustomerService
     public async Task<List<VehicleDto>> GetVehiclesAsync(int id)
     {
         _ = await _db.Customers.FindAsync(id)
-            ?? throw new System.Exception($"Customer with id '{id}' was not found.");
+            ?? throw new KeyNotFoundException($"Customer with id '{id}' was not found.");
         return await _db.Vehicles
+            .AsNoTracking()
             .Where(v => v.CustomerId == id)
             .Select(v => MapVehicleToDto(v))
             .ToListAsync();
@@ -117,13 +168,15 @@ public class CustomerService : ICustomerService
     public async Task<List<PurchaseHistoryDto>> GetPurchaseHistoryAsync(int id)
     {
         _ = await _db.Customers.FindAsync(id)
-            ?? throw new System.Exception($"Customer with id '{id}' was not found.");
+            ?? throw new KeyNotFoundException($"Customer with id '{id}' was not found.");
 
-        return await _db.SalesInvoices
+        var invoices = await _db.SalesInvoices
+            .AsNoTracking()
             .Where(si => (si.CustomerId ?? 0) == id)
             .Include(si => si.Items).ThenInclude(i => i.Part)
-            .Select(si => MapInvoiceToHistory(si))
             .ToListAsync();
+
+        return invoices.Select(MapInvoiceToHistory).ToList();
     }
 
     private static CustomerDto MapCustomerToDto(Customer c) => new()
@@ -160,6 +213,6 @@ public class CustomerService : ICustomerService
         PaidAmount = si.PaidAmount,
         DueAmount = si.DueAmount,
         PaymentStatus = si.PaymentStatus.ToString(),
-        Parts = si.Items.Select(i => i.Part.PartName).ToList()
+        Parts = si.Items.Select(i => i.Part?.PartName ?? "Unknown Part").ToList()
     };
 }
