@@ -325,7 +325,6 @@ public class CustomerService : ICustomerService
 
     private static PurchaseHistoryDto MapInvoiceToHistory(SalesInvoice si)
     {
-<<<<<<< HEAD
         var paymentStatus = EvaluateInvoicePaymentStatus(si).ToString();
         return new PurchaseHistoryDto
         {
@@ -352,30 +351,24 @@ public class CustomerService : ICustomerService
             ? PaymentStatus.Paid
             : si.PaymentStatus;
     }
-=======
-        InvoiceId = si.Id,
-        InvoiceDate = si.InvoiceDate,
-        SubTotal = si.SubTotal,
-        DiscountAmount = si.DiscountAmount,
-        TotalAmount = si.TotalAmount,
-        PaidAmount = si.PaidAmount,
-        DueAmount = si.DueAmount,
-        PaymentStatus = si.PaymentStatus.ToString(),
-        Parts = si.Items.Select(i => i.Part.PartName).ToList()
-    };
 
-    /// <summary>Maps a Customer entity (with included SalesInvoices) to a report DTO.</summary>
-    private static CustomerReportDto MapToReportDto(Customer c) => new()
+    private static CustomerReportDto MapToReportDto(Customer c)
     {
-        Id = c.Id,
-        FullName = c.FullName,
-        PhoneNumber = c.PhoneNumber,
-        Email = c.Email,
-        Address = c.Address,
-        TotalSpending = c.SalesInvoices?.Sum(si => si.TotalAmount) ?? 0,
-        PurchaseCount = c.SalesInvoices?.Count ?? 0,
-        CreditBalance = c.CreditBalance,
-        CreatedAt = c.CreatedAt
-    };
->>>>>>> 48f49ebc203edaa016399836b047a56e5dbe5617
+        var invoices = c.SalesInvoices ?? new List<SalesInvoice>();
+        var purchaseCount = invoices.Count(si => si.Items != null && si.Items.Any());
+        var totalSpending = invoices.Sum(si => si.TotalAmount);
+
+        return new CustomerReportDto
+        {
+            Id = c.Id,
+            FullName = c.FullName,
+            PhoneNumber = c.PhoneNumber,
+            Email = c.Email,
+            Address = c.Address,
+            TotalSpending = totalSpending,
+            PurchaseCount = purchaseCount,
+            CreditBalance = c.CreditBalance,
+            CreatedAt = c.CreatedAt
+        };
+    }
 }
