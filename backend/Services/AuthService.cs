@@ -213,10 +213,16 @@ namespace VehicleManagement.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
-            foreach (var userRole in userRoles)
+            var roles = userRoles.ToList();
+            if (!string.IsNullOrEmpty(user.Role) && !roles.Contains(user.Role))
             {
-                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-                authClaims.Add(new Claim("role", userRole));
+                roles.Add(user.Role);
+            }
+
+            foreach (var role in roles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, role));
+                authClaims.Add(new Claim("role", role));
             }
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]!));
