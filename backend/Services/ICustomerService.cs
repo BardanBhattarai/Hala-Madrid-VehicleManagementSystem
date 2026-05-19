@@ -11,7 +11,7 @@ public interface ICustomerService
 {
     // ── Existing CRUD & Profile ─────────────────────────────────────────
     Task<CustomerDto> RegisterWithVehicleAsync(RegisterCustomerWithVehicleDto dto);
-    Task<List<CustomerDto>> GetAllAsync();
+    Task<PaginatedResponseDto<CustomerDto>> GetAllAsync(PaginationParamsDto param);
     Task<CustomerDto> GetByIdAsync(int id);
     Task<VehicleDto> AddVehicleAsync(int customerId, VehicleCreateDto dto);
     Task<CustomerProfileDto> GetProfileAsync(int id);

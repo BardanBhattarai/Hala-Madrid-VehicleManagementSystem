@@ -6,7 +6,7 @@ namespace VehicleManagement.Services;
 
 public interface IVendorService
 {
-    Task<List<VendorDto>> GetAllAsync();
+    Task<PaginatedResponseDto<VendorDto>> GetAllAsync(PaginationParamsDto param);
     Task<VendorDto> GetByIdAsync(int id);
     Task<VendorDto> CreateAsync(CreateVendorDto dto);
     Task<VendorDto> UpdateAsync(int id, UpdateVendorDto dto);

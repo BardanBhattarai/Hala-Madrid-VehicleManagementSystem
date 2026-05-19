@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using VehicleManagement.DTOs;
 using VehicleManagement.Services;
 using VehicleManagement.Models;
@@ -7,14 +8,16 @@ namespace VehicleManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    // [Authorize(Roles = "Admin")] // Uncomment when auth is fully setup
+    [Authorize(Roles = "Admin")]
     public class StaffController : ControllerBase
     {
         private readonly IStaffService _staffService;
+        private readonly IAuthService _authService;
 
-        public StaffController(IStaffService staffService)
+        public StaffController(IStaffService staffService, IAuthService authService)
         {
             _staffService = staffService;
+            _authService = authService;
         }
 
         [HttpGet]
@@ -30,6 +33,26 @@ namespace VehicleManagement.Controllers
             var staff = await _staffService.GetStaffByIdAsync(id);
             if (staff == null) return NotFound(new { message = "Staff not found" });
             return Ok(staff);
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterStaff([FromBody] RegisterDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ApiResponse<AuthResponseDto>.Fail("Invalid payload", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList(), 400));
+            }
+
+            // Automatically force the role to Staff for this endpoint
+            model.Role = "Staff";
+
+            var response = await _authService.RegisterUserAsync(model);
+            if (!response.IsSuccess)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpPost]

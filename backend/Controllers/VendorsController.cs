@@ -10,8 +10,7 @@ namespace VehicleManagement.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// MERGE: Uncomment after JWT auth is configured by auth team member
-// [Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin")]
 public class VendorsController : ControllerBase
 {
     private readonly IVendorService _service;
@@ -19,10 +18,10 @@ public class VendorsController : ControllerBase
     public VendorsController(IVendorService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] PaginationParamsDto param)
     {
-        var vendors = await _service.GetAllAsync();
-        return Ok(ApiResponse<List<VendorDto>>.SuccessResponse(vendors));
+        var vendors = await _service.GetAllAsync(param);
+        return Ok(ApiResponse<PaginatedResponseDto<VendorDto>>.SuccessResponse(vendors));
     }
 
     [HttpGet("{id:int}")]

@@ -8,8 +8,7 @@ namespace VehicleManagement.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// MERGE: Uncomment after JWT auth is configured by auth team member
-// [Authorize(Roles = "Staff")]
+[Authorize]
 public class CustomersController : ControllerBase
 {
     private readonly ICustomerService _service;
@@ -25,6 +24,7 @@ public class CustomersController : ControllerBase
     /// Registers a new customer along with their first vehicle.
     /// </summary>
     [HttpPost("register-with-vehicle")]
+    [AllowAnonymous]
     public async Task<IActionResult> RegisterWithVehicle([FromBody] RegisterCustomerWithVehicleDto dto)
     {
         var customer = await _service.RegisterWithVehicleAsync(dto);
@@ -37,10 +37,11 @@ public class CustomersController : ControllerBase
     /// Returns all customers.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [Authorize(Roles = "Admin,Staff")]
+    public async Task<IActionResult> GetAll([FromQuery] PaginationParamsDto param)
     {
-        var customers = await _service.GetAllAsync();
-        return Ok(ApiResponse<List<CustomerDto>>.SuccessResponse(customers));
+        var customers = await _service.GetAllAsync(param);
+        return Ok(ApiResponse<PaginatedResponseDto<CustomerDto>>.SuccessResponse(customers));
     }
 
     /// <summary>
@@ -48,6 +49,7 @@ public class CustomersController : ControllerBase
     /// Returns a single customer by ID.
     /// </summary>
     [HttpGet("{id:int}")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> GetById(int id)
     {
         var customer = await _service.GetByIdAsync(id);
@@ -59,6 +61,7 @@ public class CustomersController : ControllerBase
     /// Adds a new vehicle to an existing customer.
     /// </summary>
     [HttpPost("{id:int}/vehicles")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> AddVehicle(int id, [FromBody] VehicleCreateDto dto)
     {
         var vehicle = await _service.AddVehicleAsync(id, dto);
@@ -70,6 +73,7 @@ public class CustomersController : ControllerBase
     /// Returns the full customer profile with vehicles and purchase history.
     /// </summary>
     [HttpGet("{id:int}/profile")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> GetProfile(int id)
     {
         var profile = await _service.GetProfileAsync(id);
@@ -81,6 +85,7 @@ public class CustomersController : ControllerBase
     /// Returns all vehicles belonging to a customer.
     /// </summary>
     [HttpGet("{id:int}/vehicles")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> GetVehicles(int id)
     {
         var vehicles = await _service.GetVehiclesAsync(id);
@@ -92,6 +97,7 @@ public class CustomersController : ControllerBase
     /// Returns all purchase invoices for a customer.
     /// </summary>
     [HttpGet("{id:int}/purchase-history")]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     public async Task<IActionResult> GetPurchaseHistory(int id)
     {
         var history = await _service.GetPurchaseHistoryAsync(id);

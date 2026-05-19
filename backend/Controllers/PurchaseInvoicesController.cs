@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using VehicleManagement.DTOs;
 using VehicleManagement.Services;
 
@@ -6,6 +7,7 @@ namespace VehicleManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin,Staff")]
     public class PurchaseInvoicesController : ControllerBase
     {
         private readonly IPurchaseService _purchaseService;

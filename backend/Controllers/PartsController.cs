@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using VehicleManagement.DTOs;
 using VehicleManagement.Services;
 
@@ -7,6 +8,7 @@ namespace VehicleManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin,Staff")]
     public class PartsController : ControllerBase
     {
         private readonly IPartService _partService;
@@ -17,10 +19,10 @@ namespace VehicleManagement.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PartResponseDto>>> GetAllParts()
+        public async Task<IActionResult> GetAllParts([FromQuery] PaginationParamsDto param)
         {
-            var parts = await _partService.GetAllPartsAsync();
-            return Ok(parts);
+            var parts = await _partService.GetAllPartsAsync(param);
+            return Ok(ApiResponse<PaginatedResponseDto<PartResponseDto>>.SuccessResponse(parts));
         }
 
         [HttpGet("{id}")]

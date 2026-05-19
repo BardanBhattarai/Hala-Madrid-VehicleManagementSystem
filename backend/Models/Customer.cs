@@ -15,5 +15,6 @@ namespace VehicleManagement.Models
 
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
         public ICollection<SalesInvoice> SalesInvoices { get; set; } = new List<SalesInvoice>();
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     }
 }
