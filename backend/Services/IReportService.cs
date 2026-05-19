@@ -10,5 +10,6 @@ namespace VehicleManagement.Services
         Task<FinancialReportDto> GetMonthlyReportAsync(int year, int month);
         Task<FinancialReportDto> GetYearlyReportAsync(int year);
         Task<ReportSummaryDto> GetSummaryReportAsync();
+        Task<CustomerReportsDto> GetCustomerReportsAsync();
     }
 }

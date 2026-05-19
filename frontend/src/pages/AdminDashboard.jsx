@@ -117,7 +117,19 @@ export default function AdminDashboard() {
             Real-time analytics and management operations for FleetFlow.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
+          <button 
+            onClick={() => navigate('/notifications')}
+            className="relative flex items-center justify-center p-3 rounded-xl bg-white border border-slate-100 hover:border-slate-200 shadow-sm text-slate-600 hover:text-slate-800 transition-all hover:scale-105 active:scale-95"
+            title="View system alerts"
+          >
+            <Bell className="w-5 h-5 text-slate-500" />
+            {stats?.unreadNotificationsCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white ring-2 ring-white animate-pulse">
+                {stats.unreadNotificationsCount}
+              </span>
+            )}
+          </button>
           <Button 
             onClick={fetchData} 
             variant="secondary" 

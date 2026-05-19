@@ -7,7 +7,7 @@ namespace VehicleManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class ReportsController : ControllerBase
     {
         private readonly IReportService _reportService;
@@ -18,6 +18,7 @@ namespace VehicleManagement.Controllers
         }
 
         [HttpGet("daily")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetDailyReport([FromQuery] DateTime? date)
         {
             var reportDate = date ?? DateTime.UtcNow;
@@ -26,6 +27,7 @@ namespace VehicleManagement.Controllers
         }
 
         [HttpGet("monthly")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetMonthlyReport([FromQuery] int? year, [FromQuery] int? month)
         {
             var reportYear = year ?? DateTime.UtcNow.Year;
@@ -39,6 +41,7 @@ namespace VehicleManagement.Controllers
         }
 
         [HttpGet("yearly")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetYearlyReport([FromQuery] int? year)
         {
             var reportYear = year ?? DateTime.UtcNow.Year;
@@ -47,10 +50,19 @@ namespace VehicleManagement.Controllers
         }
 
         [HttpGet("summary")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetSummary()
         {
             var summary = await _reportService.GetSummaryReportAsync();
             return Ok(summary);
+        }
+
+        [HttpGet("customers")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetCustomerReports()
+        {
+            var reports = await _reportService.GetCustomerReportsAsync();
+            return Ok(reports);
         }
     }
 }

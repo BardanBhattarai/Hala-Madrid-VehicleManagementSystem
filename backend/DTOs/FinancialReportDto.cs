@@ -26,4 +26,38 @@ namespace VehicleManagement.DTOs
         public decimal Amount { get; set; }
         public DateTime Date { get; set; }
     }
+
+    public class CustomerReportsDto
+    {
+        public List<RegularCustomerDto> Regulars { get; set; } = new();
+        public List<HighSpenderDto> HighSpenders { get; set; } = new();
+        public List<PendingCreditCustomerDto> PendingCredits { get; set; } = new();
+    }
+
+    public class RegularCustomerDto
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public int PurchaseCount { get; set; }
+    }
+
+    public class HighSpenderDto
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public decimal TotalSpent { get; set; }
+    }
+
+    public class PendingCreditCustomerDto
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public decimal CreditBalance { get; set; }
+    }
 }

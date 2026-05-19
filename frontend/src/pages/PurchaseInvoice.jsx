@@ -28,7 +28,7 @@ const PurchaseInvoice = () => {
   const fetchParts = async () => {
     try {
       const res = await partsApi.getAllParts();
-      setParts(res.data.data || res.data);
+      setParts(res.data.data?.items || res.data.items || res.data.data || []);
     } catch (err) {
       setError("Failed to fetch parts inventory.");
     } finally {

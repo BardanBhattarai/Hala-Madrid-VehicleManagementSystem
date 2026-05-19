@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using VehicleManagement.Data;
 using VehicleManagement.DTOs;
 using VehicleManagement.Models;
@@ -7,108 +8,124 @@ namespace VehicleManagement.Services
 {
     public class StaffService : IStaffService
     {
-        private readonly AppDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public StaffService(AppDbContext context)
+        public StaffService(UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            _userManager = userManager;
         }
 
         public async Task<IEnumerable<StaffResponseDto>> GetAllStaffAsync()
         {
-            return await _context.Staffs
-                .Select(s => new StaffResponseDto
-                {
-                    Id = s.Id,
-                    FullName = s.FullName,
-                    Email = s.Email,
-                    Role = s.Role,
-                    CreatedAt = s.CreatedAt
-                })
+            var users = await _userManager.Users
+                .Where(u => u.Role == "Staff" || u.Role == "Admin")
                 .ToListAsync();
+
+            return users.Select(u => new StaffResponseDto
+            {
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email ?? string.Empty,
+                Role = u.Role,
+                CreatedAt = u.CreatedAt
+            });
         }
 
-        public async Task<StaffResponseDto?> GetStaffByIdAsync(int id)
+        public async Task<StaffResponseDto?> GetStaffByIdAsync(string id)
         {
-            var s = await _context.Staffs.FindAsync(id);
-            if (s == null) return null;
+            var u = await _userManager.FindByIdAsync(id);
+            if (u == null || (u.Role != "Staff" && u.Role != "Admin")) return null;
 
             return new StaffResponseDto
             {
-                Id = s.Id,
-                FullName = s.FullName,
-                Email = s.Email,
-                Role = s.Role,
-                CreatedAt = s.CreatedAt
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email ?? string.Empty,
+                Role = u.Role,
+                CreatedAt = u.CreatedAt
             };
         }
 
         public async Task<StaffResponseDto> CreateStaffAsync(StaffCreateDto dto)
         {
-            var staff = new Staff
+            var identityUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (identityUser != null)
             {
-                FullName = dto.FullName,
+                throw new Exception("User with this email already exists!");
+            }
+
+            var newUser = new ApplicationUser
+            {
+                UserName = dto.Email,
                 Email = dto.Email,
-                Password = dto.Password, // In real apps, hash this!
+                EmailConfirmed = true,
+                FullName = dto.FullName,
                 Role = dto.Role
             };
 
-            _context.Staffs.Add(staff);
-            await _context.SaveChangesAsync();
+            var result = await _userManager.CreateAsync(newUser, dto.Password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Failed to create staff in Identity: {errors}");
+            }
+
+            await _userManager.AddToRoleAsync(newUser, dto.Role);
 
             return new StaffResponseDto
             {
-                Id = staff.Id,
-                FullName = staff.FullName,
-                Email = staff.Email,
-                Role = staff.Role,
-                CreatedAt = staff.CreatedAt
+                Id = newUser.Id,
+                FullName = newUser.FullName,
+                Email = newUser.Email ?? string.Empty,
+                Role = newUser.Role,
+                CreatedAt = newUser.CreatedAt
             };
         }
 
-        public async Task<bool> UpdateStaffAsync(int id, StaffUpdateDto dto)
+        public async Task<bool> UpdateStaffAsync(string id, StaffUpdateDto dto)
         {
-            var staff = await _context.Staffs.FindAsync(id);
-            if (staff == null) return false;
+            var identityUser = await _userManager.FindByIdAsync(id);
+            if (identityUser == null) return false;
 
-            staff.FullName = dto.FullName;
-            staff.Email = dto.Email;
-            staff.Role = dto.Role;
+            identityUser.Email = dto.Email;
+            identityUser.UserName = dto.Email;
+            identityUser.FullName = dto.FullName;
+            
+            if (identityUser.Role != dto.Role)
+            {
+                await _userManager.RemoveFromRoleAsync(identityUser, identityUser.Role);
+                await _userManager.AddToRoleAsync(identityUser, dto.Role);
+                identityUser.Role = dto.Role;
+            }
+
+            var result = await _userManager.UpdateAsync(identityUser);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Failed to update staff in Identity: {errors}");
+            }
 
             if (!string.IsNullOrEmpty(dto.Password))
             {
-                staff.Password = dto.Password;
+                var token = await _userManager.GeneratePasswordResetTokenAsync(identityUser);
+                var pwResult = await _userManager.ResetPasswordAsync(identityUser, token, dto.Password);
+                if (!pwResult.Succeeded)
+                {
+                    var errors = string.Join(", ", pwResult.Errors.Select(e => e.Description));
+                    throw new Exception($"Failed to reset staff password: {errors}");
+                }
             }
 
-            await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> DeleteStaffAsync(int id)
+        public async Task<bool> DeleteStaffAsync(string id)
         {
-            var staff = await _context.Staffs.FindAsync(id);
-            if (staff == null) return false;
+            var identityUser = await _userManager.FindByIdAsync(id);
+            if (identityUser == null) return false;
 
-            _context.Staffs.Remove(staff);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<StaffResponseDto?> LoginAsync(StaffLoginDto dto)
-        {
-            var staff = await _context.Staffs
-                .FirstOrDefaultAsync(s => s.Email == dto.Email && s.Password == dto.Password);
-
-            if (staff == null) return null;
-
-            return new StaffResponseDto
-            {
-                Id = staff.Id,
-                FullName = staff.FullName,
-                Email = staff.Email,
-                Role = staff.Role,
-                CreatedAt = staff.CreatedAt
-            };
+            var result = await _userManager.DeleteAsync(identityUser);
+            return result.Succeeded;
         }
     }
 }

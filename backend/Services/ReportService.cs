@@ -1,10 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using VehicleManagement.Data;
 using VehicleManagement.DTOs;
-
-
-
 using VehicleManagement.Models;
+
 namespace VehicleManagement.Services
 {
     public class ReportService : IReportService
@@ -21,12 +19,10 @@ namespace VehicleManagement.Services
             var dayStart = date.Date;
             var dayEnd = dayStart.AddDays(1);
 
-            // Fetch sales data
             var sales = await _context.SalesInvoices
                 .Where(s => s.InvoiceDate >= dayStart && s.InvoiceDate < dayEnd)
                 .ToListAsync();
 
-            // Fetch purchase data
             var purchases = await _context.PurchaseInvoices
                 .Where(p => p.PurchaseDate >= dayStart && p.PurchaseDate < dayEnd)
                 .ToListAsync();
@@ -101,7 +97,6 @@ namespace VehicleManagement.Services
 
         public async Task<ReportSummaryDto> GetSummaryReportAsync()
         {
-            // Future-proof: Wrap in try-catch to handle missing tables gracefully if needed
             try 
             {
                 var totalSales = await _context.SalesInvoices.SumAsync(s => s.TotalAmount);
@@ -136,8 +131,6 @@ namespace VehicleManagement.Services
             }
             catch (Exception)
             {
-                // If tables do not exist or other DB errors, return empty/zero data
-                // This fulfills the "future-proof" requirement for coursework
                 return new ReportSummaryDto
                 {
                     TotalSales = 0,
@@ -146,6 +139,97 @@ namespace VehicleManagement.Services
                     LowStockCount = 0,
                     RecentInvoices = new List<RecentInvoiceDto>()
                 };
+            }
+        }
+
+        public async Task<CustomerReportsDto> GetCustomerReportsAsync()
+        {
+            try
+            {
+                // 1. Regulars
+                var regularsGroup = await _context.SalesInvoices
+                    .AsNoTracking()
+                    .Where(si => si.CustomerId != null)
+                    .GroupBy(si => si.CustomerId)
+                    .Select(g => new { CustomerId = g.Key, Count = g.Count() })
+                    .OrderByDescending(x => x.Count)
+                    .Take(10)
+                    .ToListAsync();
+
+                var regularCustomerIds = regularsGroup.Select(x => x.CustomerId!.Value).ToList();
+                var regularCustomers = await _context.Customers
+                    .AsNoTracking()
+                    .Where(c => regularCustomerIds.Contains(c.Id))
+                    .ToListAsync();
+
+                var regularsList = regularsGroup.Select(rg => 
+                {
+                    var cust = regularCustomers.FirstOrDefault(c => c.Id == rg.CustomerId);
+                    return new RegularCustomerDto
+                    {
+                        Id = rg.CustomerId ?? 0,
+                        FullName = cust?.FullName ?? "Unknown",
+                        PhoneNumber = cust?.PhoneNumber ?? string.Empty,
+                        Email = cust?.Email ?? string.Empty,
+                        PurchaseCount = rg.Count
+                    };
+                }).ToList();
+
+                // 2. High Spenders
+                var spendersGroup = await _context.SalesInvoices
+                    .AsNoTracking()
+                    .Where(si => si.CustomerId != null)
+                    .GroupBy(si => si.CustomerId)
+                    .Select(g => new { CustomerId = g.Key, Total = g.Sum(x => x.TotalAmount) })
+                    .OrderByDescending(x => x.Total)
+                    .Take(10)
+                    .ToListAsync();
+
+                var spenderCustomerIds = spendersGroup.Select(x => x.CustomerId!.Value).ToList();
+                var spenderCustomers = await _context.Customers
+                    .AsNoTracking()
+                    .Where(c => spenderCustomerIds.Contains(c.Id))
+                    .ToListAsync();
+
+                var spendersList = spendersGroup.Select(sg => 
+                {
+                    var cust = spenderCustomers.FirstOrDefault(c => c.Id == sg.CustomerId);
+                    return new HighSpenderDto
+                    {
+                        Id = sg.CustomerId ?? 0,
+                        FullName = cust?.FullName ?? "Unknown",
+                        PhoneNumber = cust?.PhoneNumber ?? string.Empty,
+                        Email = cust?.Email ?? string.Empty,
+                        TotalSpent = sg.Total
+                    };
+                }).ToList();
+
+                // 3. Pending Credits
+                var pendingCreditsList = await _context.Customers
+                    .AsNoTracking()
+                    .Where(c => c.CreditBalance > 0)
+                    .OrderByDescending(c => c.CreditBalance)
+                    .Take(10)
+                    .Select(c => new PendingCreditCustomerDto
+                    {
+                        Id = c.Id,
+                        FullName = c.FullName,
+                        PhoneNumber = c.PhoneNumber,
+                        Email = c.Email,
+                        CreditBalance = c.CreditBalance
+                    })
+                    .ToListAsync();
+
+                return new CustomerReportsDto
+                {
+                    Regulars = regularsList,
+                    HighSpenders = spendersList,
+                    PendingCredits = pendingCreditsList
+                };
+            }
+            catch (Exception)
+            {
+                return new CustomerReportsDto();
             }
         }
     }
