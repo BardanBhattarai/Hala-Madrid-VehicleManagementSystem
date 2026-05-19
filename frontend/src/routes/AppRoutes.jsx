@@ -8,6 +8,7 @@ import RegisterPage from '../pages/RegisterPage';
 // Tasks 1-4 pages
 import AdminReports from '../pages/AdminReports';
 import StaffManagement from '../pages/StaffManagement';
+import AdminDashboard from '../pages/AdminDashboard';
 import PartsManagement from '../pages/AdminReports'; // Placeholder if needed, but I'll use real ones
 
 // Tasks 5-8 pages
@@ -76,7 +77,7 @@ export default function AppRoutes() {
         <Route path="/" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
 
         {/* Dynamic Redirection Targets */}
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['Admin']}><AdminReports /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/staff" element={<ProtectedRoute allowedRoles={['Admin', 'Staff']}><SalesInvoiceList /></ProtectedRoute>} />
         <Route path="/customer" element={<ProtectedRoute allowedRoles={['Admin', 'Staff', 'Customer']}><AppointmentList /></ProtectedRoute>} />
 
