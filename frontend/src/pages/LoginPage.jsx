@@ -6,6 +6,8 @@ import Button from '../shared/components/Button';
 import AlertMessage from '../shared/components/AlertMessage';
 import { Car } from 'lucide-react';
 
+import { decodeToken, extractRole } from '../services/AuthService';
+
 export default function LoginPage() {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
@@ -58,8 +60,30 @@ export default function LoginPage() {
     const result = await login(credentials);
     if (result.success) {
       setSuccess('Successfully signed in! Accessing portal...');
+      
+      // Decode active JWT token
+      const token = localStorage.getItem('token');
+      console.log('[DEBUG] LoginPage - Retrieved token:', token);
+      
+      const decoded = decodeToken(token);
+      console.log('[DEBUG] LoginPage - Decoded JWT Token:', decoded);
+      
+      const role = extractRole(decoded);
+      console.log('[DEBUG] LoginPage - Extracted role:', role);
+      
+      let targetPath = '/';
+      if (role === 'Admin') {
+        targetPath = '/admin';
+      } else if (role === 'Staff') {
+        targetPath = '/staff';
+      } else if (role === 'Customer') {
+        targetPath = '/customer';
+      }
+      
+      console.log('[DEBUG] LoginPage - Navigation target determined:', targetPath);
+
       setTimeout(() => {
-        navigate('/');
+        navigate(targetPath);
       }, 1200);
     } else {
       setError(result.error || 'Invalid email or password.');

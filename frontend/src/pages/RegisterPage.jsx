@@ -96,7 +96,7 @@ export default function RegisterPage() {
     
     const result = await register(registerData);
     if (result.success) {
-      navigate('/');
+      navigate('/customer');
     } else {
       setError(result.error);
       setIsSubmitting(false);
