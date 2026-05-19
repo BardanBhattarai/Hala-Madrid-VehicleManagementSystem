@@ -20,83 +20,125 @@ namespace VehicleManagement.Services
         {
             var dayStart = date.Date;
             var dayEnd = dayStart.AddDays(1);
-
-            // Fetch sales data
-            var sales = await _context.SalesInvoices
-                .Where(s => s.InvoiceDate >= dayStart && s.InvoiceDate < dayEnd)
-                .ToListAsync();
-
-            // Fetch purchase data
-            var purchases = await _context.PurchaseInvoices
-                .Where(p => p.PurchaseDate >= dayStart && p.PurchaseDate < dayEnd)
-                .ToListAsync();
-
-            var totalSales = sales.Sum(s => s.TotalAmount);
-            var totalPurchases = purchases.Sum(p => p.TotalAmount);
-
-            return new FinancialReportDto
+            try
             {
-                TotalSales = totalSales,
-                TotalPurchases = totalPurchases,
-                ProfitOrLoss = totalSales - totalPurchases,
-                SalesInvoiceCount = sales.Count,
-                PurchaseInvoiceCount = purchases.Count,
-                ReportPeriod = date.ToString("yyyy-MM-dd")
-            };
+                // Fetch sales data
+                var sales = await _context.SalesInvoices
+                    .Where(s => s.InvoiceDate >= dayStart && s.InvoiceDate < dayEnd)
+                    .ToListAsync();
+
+                // Fetch purchase data
+                var purchases = await _context.PurchaseInvoices
+                    .Where(p => p.PurchaseDate >= dayStart && p.PurchaseDate < dayEnd)
+                    .ToListAsync();
+
+                var totalSales = sales.Sum(s => s.TotalAmount);
+                var totalPurchases = purchases.Sum(p => p.TotalAmount);
+
+                return new FinancialReportDto
+                {
+                    TotalSales = totalSales,
+                    TotalPurchases = totalPurchases,
+                    ProfitOrLoss = totalSales - totalPurchases,
+                    SalesInvoiceCount = sales.Count,
+                    PurchaseInvoiceCount = purchases.Count,
+                    ReportPeriod = date.ToString("yyyy-MM-dd")
+                };
+            }
+            catch (Exception)
+            {
+                return new FinancialReportDto
+                {
+                    TotalSales = 0,
+                    TotalPurchases = 0,
+                    ProfitOrLoss = 0,
+                    SalesInvoiceCount = 0,
+                    PurchaseInvoiceCount = 0,
+                    ReportPeriod = date.ToString("yyyy-MM-dd")
+                };
+            }
         }
 
         public async Task<FinancialReportDto> GetMonthlyReportAsync(int year, int month)
         {
             var monthStart = new DateTime(year, month, 1);
             var monthEnd = monthStart.AddMonths(1);
-
-            var sales = await _context.SalesInvoices
-                .Where(s => s.InvoiceDate >= monthStart && s.InvoiceDate < monthEnd)
-                .ToListAsync();
-
-            var purchases = await _context.PurchaseInvoices
-                .Where(p => p.PurchaseDate >= monthStart && p.PurchaseDate < monthEnd)
-                .ToListAsync();
-
-            var totalSales = sales.Sum(s => s.TotalAmount);
-            var totalPurchases = purchases.Sum(p => p.TotalAmount);
-
-            return new FinancialReportDto
+            try
             {
-                TotalSales = totalSales,
-                TotalPurchases = totalPurchases,
-                ProfitOrLoss = totalSales - totalPurchases,
-                SalesInvoiceCount = sales.Count,
-                PurchaseInvoiceCount = purchases.Count,
-                ReportPeriod = monthStart.ToString("MMMM yyyy")
-            };
+                var sales = await _context.SalesInvoices
+                    .Where(s => s.InvoiceDate >= monthStart && s.InvoiceDate < monthEnd)
+                    .ToListAsync();
+
+                var purchases = await _context.PurchaseInvoices
+                    .Where(p => p.PurchaseDate >= monthStart && p.PurchaseDate < monthEnd)
+                    .ToListAsync();
+
+                var totalSales = sales.Sum(s => s.TotalAmount);
+                var totalPurchases = purchases.Sum(p => p.TotalAmount);
+
+                return new FinancialReportDto
+                {
+                    TotalSales = totalSales,
+                    TotalPurchases = totalPurchases,
+                    ProfitOrLoss = totalSales - totalPurchases,
+                    SalesInvoiceCount = sales.Count,
+                    PurchaseInvoiceCount = purchases.Count,
+                    ReportPeriod = monthStart.ToString("MMMM yyyy")
+                };
+            }
+            catch (Exception)
+            {
+                return new FinancialReportDto
+                {
+                    TotalSales = 0,
+                    TotalPurchases = 0,
+                    ProfitOrLoss = 0,
+                    SalesInvoiceCount = 0,
+                    PurchaseInvoiceCount = 0,
+                    ReportPeriod = monthStart.ToString("MMMM yyyy")
+                };
+            }
         }
 
         public async Task<FinancialReportDto> GetYearlyReportAsync(int year)
         {
             var yearStart = new DateTime(year, 1, 1);
             var yearEnd = yearStart.AddYears(1);
-
-            var sales = await _context.SalesInvoices
-                .Where(s => s.InvoiceDate >= yearStart && s.InvoiceDate < yearEnd)
-                .ToListAsync();
-
-            var purchases = await _context.PurchaseInvoices
-                .Where(p => p.PurchaseDate >= yearStart && p.PurchaseDate < yearEnd)
-                .ToListAsync();
-
-            var totalSales = sales.Sum(s => s.TotalAmount);
-            var totalPurchases = purchases.Sum(p => p.TotalAmount);
-
-            return new FinancialReportDto
+            try
             {
-                TotalSales = totalSales,
-                TotalPurchases = totalPurchases,
-                ProfitOrLoss = totalSales - totalPurchases,
-                SalesInvoiceCount = sales.Count,
-                PurchaseInvoiceCount = purchases.Count,
-                ReportPeriod = year.ToString()
-            };
+                var sales = await _context.SalesInvoices
+                    .Where(s => s.InvoiceDate >= yearStart && s.InvoiceDate < yearEnd)
+                    .ToListAsync();
+
+                var purchases = await _context.PurchaseInvoices
+                    .Where(p => p.PurchaseDate >= yearStart && p.PurchaseDate < yearEnd)
+                    .ToListAsync();
+
+                var totalSales = sales.Sum(s => s.TotalAmount);
+                var totalPurchases = purchases.Sum(p => p.TotalAmount);
+
+                return new FinancialReportDto
+                {
+                    TotalSales = totalSales,
+                    TotalPurchases = totalPurchases,
+                    ProfitOrLoss = totalSales - totalPurchases,
+                    SalesInvoiceCount = sales.Count,
+                    PurchaseInvoiceCount = purchases.Count,
+                    ReportPeriod = year.ToString()
+                };
+            }
+            catch (Exception)
+            {
+                return new FinancialReportDto
+                {
+                    TotalSales = 0,
+                    TotalPurchases = 0,
+                    ProfitOrLoss = 0,
+                    SalesInvoiceCount = 0,
+                    PurchaseInvoiceCount = 0,
+                    ReportPeriod = year.ToString()
+                };
+            }
         }
 
         public async Task<ReportSummaryDto> GetSummaryReportAsync()

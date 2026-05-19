@@ -119,28 +119,44 @@ public class SalesInvoiceService : ISalesInvoiceService
             .Select(si => MapToDto(si))
             .ToListAsync();
 
-    private static SalesInvoiceDto MapToDto(SalesInvoice si) => new()
+    private static SalesInvoiceDto MapToDto(SalesInvoice si)
     {
-        Id = si.Id,
-        CustomerId = (int)(si.CustomerId ?? 0),
-        CustomerName = si.Customer?.FullName ?? si.CustomerName ?? "Unknown Customer",
-        StaffId = si.StaffId,
-        InvoiceDate = si.InvoiceDate,
-        SubTotal = si.SubTotal,
-        DiscountAmount = si.DiscountAmount,
-        TotalAmount = si.TotalAmount,
-        PaidAmount = si.PaidAmount,
-        DueAmount = si.DueAmount,
-        PaymentStatus = si.PaymentStatus.ToString(),
-        CreatedAt = si.CreatedAt,
-        Items = si.Items.Select(i => new SalesInvoiceItemDto
+        var paymentStatus = EvaluateInvoicePaymentStatus(si).ToString();
+        return new SalesInvoiceDto
         {
-            Id = i.Id,
-            PartId = i.PartId,
-            PartName = i.Part?.PartName ?? "Unknown Part",
-            Quantity = i.Quantity,
-            UnitPrice = i.UnitPrice,
-            TotalPrice = i.TotalPrice
-        }).ToList()
-    };
+            Id = si.Id,
+            CustomerId = (int)(si.CustomerId ?? 0),
+            CustomerName = si.Customer?.FullName ?? si.CustomerName ?? "Unknown Customer",
+            StaffId = si.StaffId,
+            InvoiceDate = si.InvoiceDate,
+            SubTotal = si.SubTotal,
+            DiscountAmount = si.DiscountAmount,
+            TotalAmount = si.TotalAmount,
+            PaidAmount = si.PaidAmount,
+            DueAmount = si.DueAmount,
+            PaymentStatus = paymentStatus,
+            CreatedAt = si.CreatedAt,
+            Items = si.Items.Select(i => new SalesInvoiceItemDto
+            {
+                Id = i.Id,
+                PartId = i.PartId,
+                PartName = i.Part?.PartName ?? "Unknown Part",
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                TotalPrice = i.TotalPrice
+            }).ToList()
+        };
+    }
+
+    private static PaymentStatus EvaluateInvoicePaymentStatus(SalesInvoice si)
+    {
+        if (!si.Items.Any())
+        {
+            return PaymentStatus.Unpaid;
+        }
+
+        return si.PaymentStatus == PaymentStatus.Unpaid
+            ? PaymentStatus.Paid
+            : si.PaymentStatus;
+    }
 }

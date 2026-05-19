@@ -150,16 +150,32 @@ public class CustomerService : ICustomerService
         LastServiceDate = v.LastServiceDate
     };
 
-    private static PurchaseHistoryDto MapInvoiceToHistory(SalesInvoice si) => new()
+    private static PurchaseHistoryDto MapInvoiceToHistory(SalesInvoice si)
     {
-        InvoiceId = si.Id,
-        InvoiceDate = si.InvoiceDate,
-        SubTotal = si.SubTotal,
-        DiscountAmount = si.DiscountAmount,
-        TotalAmount = si.TotalAmount,
-        PaidAmount = si.PaidAmount,
-        DueAmount = si.DueAmount,
-        PaymentStatus = si.PaymentStatus.ToString(),
-        Parts = si.Items.Select(i => i.Part.PartName).ToList()
-    };
+        var paymentStatus = EvaluateInvoicePaymentStatus(si).ToString();
+        return new PurchaseHistoryDto
+        {
+            InvoiceId = si.Id,
+            InvoiceDate = si.InvoiceDate,
+            SubTotal = si.SubTotal,
+            DiscountAmount = si.DiscountAmount,
+            TotalAmount = si.TotalAmount,
+            PaidAmount = si.PaidAmount,
+            DueAmount = si.DueAmount,
+            PaymentStatus = paymentStatus,
+            Parts = si.Items.Select(i => i.Part.PartName).ToList()
+        };
+    }
+
+    private static PaymentStatus EvaluateInvoicePaymentStatus(SalesInvoice si)
+    {
+        if (!si.Items.Any())
+        {
+            return PaymentStatus.Unpaid;
+        }
+
+        return si.PaymentStatus == PaymentStatus.Unpaid
+            ? PaymentStatus.Paid
+            : si.PaymentStatus;
+    }
 }
