@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../shared/components/ProtectedRoute';
+import RoleProtectedRoute from '../shared/components/RoleProtectedRoute';
 import { useAuth } from '../shared/context/AuthContext';
 
 import LoginPage from '../pages/LoginPage';
@@ -77,7 +78,7 @@ export default function AppRoutes() {
         <Route path="/" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
 
         {/* Dynamic Redirection Targets */}
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin" element={<RoleProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></RoleProtectedRoute>} />
         <Route path="/staff" element={<ProtectedRoute allowedRoles={['Admin', 'Staff']}><SalesInvoiceList /></ProtectedRoute>} />
         <Route path="/customer" element={<ProtectedRoute allowedRoles={['Admin', 'Staff', 'Customer']}><AppointmentList /></ProtectedRoute>} />
 
