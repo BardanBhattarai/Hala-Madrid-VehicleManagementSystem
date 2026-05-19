@@ -128,13 +128,13 @@ export default function SalesInvoiceList() {
                 invoices.map((inv) => (
                   <tr key={inv.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4 font-bold text-indigo-600">
-                      {inv.invoiceNumber}
+                      #{inv.id}
                     </td>
                     <td className="px-6 py-4 font-semibold text-slate-800">
                       {inv.customerName || `Customer #${inv.customerId}`}
                     </td>
                     <td className="px-6 py-4 text-slate-500">
-                      {new Date(inv.issueDate).toLocaleDateString()}
+                      {inv.invoiceDate ? new Date(inv.invoiceDate).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="px-6 py-4 font-bold text-slate-800">
                       Rs. {inv.totalAmount.toLocaleString()}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { createSalesInvoice } from '../api/salesInvoiceApi';
 import { getAllCustomers } from '../../customers/api/customerApi';
 import { getAllParts } from '../../parts/api/partApi';
@@ -14,6 +14,7 @@ const emptyItem = { partId: '', quantity: 1, unitPrice: 0, partName: '' };
 
 export default function CreateSalesInvoice() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [customers, setCustomers] = useState([]);
   const [parts, setParts] = useState([]);
   const [customerId, setCustomerId] = useState('');
@@ -24,8 +25,14 @@ export default function CreateSalesInvoice() {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    getAllCustomers().then(res => setCustomers(res.data.data || res.data)).catch(() => {});
-    getAllParts().then(res => setParts(res.data.data || res.data)).catch(() => {});
+    if (location.state?.selectedCustomerId) {
+      setCustomerId(location.state.selectedCustomerId.toString());
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    getAllCustomers().then(res => setCustomers(res.data.data?.items || res.data.items || res.data.data || [])).catch(() => {});
+    getAllParts().then(res => setParts(res.data.data?.items || res.data.items || res.data.data || [])).catch(() => {});
   }, []);
 
   const handlePartSelect = (idx, partId) => {

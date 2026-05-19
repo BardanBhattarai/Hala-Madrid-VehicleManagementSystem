@@ -10,4 +10,5 @@ public interface ISalesInvoiceService
     Task<PaginatedResponseDto<SalesInvoiceDto>> GetAllAsync(PaginationParamsDto param);
     Task<SalesInvoiceDto> GetByIdAsync(int id);
     Task<List<SalesInvoiceDto>> GetByCustomerIdAsync(int customerId);
+    Task<bool> SendInvoiceEmailAsync(int invoiceId);
 }

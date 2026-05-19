@@ -56,4 +56,18 @@ public class SalesInvoicesController : ControllerBase
         var invoices = await _service.GetByCustomerIdAsync(customerId);
         return Ok(ApiResponse<List<SalesInvoiceDto>>.SuccessResponse(invoices));
     }
+
+    [HttpPost("{id:int}/send-email")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin,Staff")]
+    public async Task<IActionResult> SendEmail(int id)
+    {
+        var result = await _service.SendInvoiceEmailAsync(id);
+        if (!result)
+        {
+            return BadRequest(ApiResponse<bool>.Fail("Could not send email. Make sure customer has a valid email address configured."));
+        }
+        return Ok(ApiResponse<bool>.SuccessResponse(true, "Invoice email sent successfully to customer!"));
+    }
 }

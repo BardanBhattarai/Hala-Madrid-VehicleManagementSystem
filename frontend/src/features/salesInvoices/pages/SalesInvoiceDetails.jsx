@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getSalesInvoiceById } from '../api/salesInvoiceApi';
 import AlertMessage from '../../../shared/components/AlertMessage';
 import Button from '../../../shared/components/Button';
+import api from '../../../shared/api/axiosConfig';
 
 export default function SalesInvoiceDetails() {
   const { id } = useParams();
@@ -10,6 +11,23 @@ export default function SalesInvoiceDetails() {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [emailing, setEmailing] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState('');
+  const [emailError, setEmailError] = useState('');
+
+  const handleSendEmail = async () => {
+    setEmailing(true);
+    setEmailSuccess('');
+    setEmailError('');
+    try {
+      await api.post(`/sales-invoices/${id}/send-email`);
+      setEmailSuccess('Invoice successfully sent to customer via email!');
+    } catch (err) {
+      setEmailError(err.response?.data?.message || 'Failed to send invoice email.');
+    } finally {
+      setEmailing(false);
+    }
+  };
 
   useEffect(() => {
     getSalesInvoiceById(id)
@@ -35,10 +53,22 @@ export default function SalesInvoiceDetails() {
             <p className="text-slate-500 font-medium">Detailed transaction record for this sale.</p>
           </div>
         </div>
-        <Button variant="secondary" onClick={() => navigate(-1)} className="rounded-xl px-6 py-3 font-bold">
-          ← Back to List
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={handleSendEmail} 
+            disabled={emailing} 
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-3 font-bold flex items-center gap-2 shadow-md shadow-indigo-100"
+          >
+            {emailing ? 'Sending...' : '📧 Send Email'}
+          </Button>
+          <Button variant="secondary" onClick={() => navigate(-1)} className="rounded-xl px-6 py-3 font-bold">
+            ← Back to List
+          </Button>
+        </div>
       </div>
+
+      {emailSuccess && <div className="mb-6"><AlertMessage type="success" message={emailSuccess} /></div>}
+      {emailError && <div className="mb-6"><AlertMessage type="error" message={emailError} /></div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
