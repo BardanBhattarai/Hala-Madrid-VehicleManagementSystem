@@ -37,14 +37,20 @@ public class SalesInvoiceService : ISalesInvoiceService
         var partIds = dto.Items.Select(i => i.PartId).Distinct().ToList();
         var parts = await _db.Parts.Where(p => partIds.Contains(p.Id)).ToListAsync();
 
-        foreach (var item in dto.Items)
-        {
-            var part = parts.FirstOrDefault(p => p.Id == item.PartId)
-                ?? throw new KeyNotFoundException($"Part with id '{item.PartId}' was not found.");
+        var requestedQuantities = dto.Items
+            .GroupBy(i => i.PartId)
+            .ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
 
-            if (part.StockQuantity < item.Quantity)
+        foreach (var kvp in requestedQuantities)
+        {
+            var partId = kvp.Key;
+            var requestedQty = kvp.Value;
+            var part = parts.FirstOrDefault(p => p.Id == partId)
+                ?? throw new KeyNotFoundException($"Part with id '{partId}' was not found.");
+
+            if (part.StockQuantity < requestedQty)
                 throw new InvalidOperationException(
-                    $"Insufficient stock for '{part.PartName}'. Available: {part.StockQuantity}, Requested: {item.Quantity}.");
+                    $"Insufficient stock for {part.PartName} (Available: {part.StockQuantity}, Requested: {requestedQty})");
         }
 
         // 3. Calculate totals

@@ -1,13 +1,11 @@
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5051/api';
+import api from '../shared/api/axiosConfig';
 
 const partsApi = {
-  getAllParts: (params) => axios.get(`${API_BASE_URL}/parts`, { params }),
-  getPartById: (id) => axios.get(`${API_BASE_URL}/parts/${id}`),
-  createPart: (data) => axios.post(`${API_BASE_URL}/parts`, data),
-  updatePart: (id, data) => axios.put(`${API_BASE_URL}/parts/${id}`, data),
-  deletePart: (id) => axios.delete(`${API_BASE_URL}/parts/${id}`),
+  getAllParts: (params) => api.get('/parts', { params }),
+  getPartById: (id) => api.get(`/parts/${id}`),
+  createPart: (data) => api.post('/parts', data),
+  updatePart: (id, data) => api.put(`/parts/${id}`, data),
+  deletePart: (id) => api.delete(`/parts/${id}`),
 };
 
 export default partsApi;

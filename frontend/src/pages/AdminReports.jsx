@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../shared/api/axiosConfig';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell 
@@ -8,8 +8,6 @@ import {
   TrendingUp, TrendingDown, Package, FileText, 
   Calendar, ChevronRight, AlertTriangle, Loader2 
 } from 'lucide-react';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5051/api'; 
 
 const AdminReports = () => {
   const [reportType, setReportType] = useState('daily');
@@ -25,14 +23,14 @@ const AdminReports = () => {
     setLoading(true);
     setError(null);
     try {
-      let url = `${API_BASE_URL}/reports/${reportType}`;
+      let url = `/reports/${reportType}`;
       if (reportType === 'daily') url += `?date=${dateValue}`;
       else if (reportType === 'monthly') url += `?year=${yearValue}&month=${monthValue}`;
       else if (reportType === 'yearly') url += `?year=${yearValue}`;
 
       const [reportRes, summaryRes] = await Promise.all([
-        axios.get(url),
-        axios.get(`${API_BASE_URL}/reports/summary`)
+        api.get(url),
+        api.get('/reports/summary')
       ]);
 
       setData(reportRes.data);

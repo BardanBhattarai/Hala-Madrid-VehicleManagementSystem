@@ -1,26 +1,29 @@
 export default function InvoiceSummary({ subTotal, discountAmount, totalAmount, paidAmount, dueAmount, onPaidAmountChange }) {
-  const row = (label, value, color) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color }}>
-      <span>{label}</span>
-      <strong>Rs. {value.toFixed(2)}</strong>
+  const row = (label, value, valueClassName = '') => (
+    <div className="flex justify-between items-center mb-3">
+      <span className="text-slate-500 font-bold text-sm">{label}</span>
+      <strong className={`text-slate-800 font-black ${valueClassName}`}>Rs. {value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
     </div>
   );
 
   return (
-    <div style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '8px', maxWidth: '380px', marginLeft: 'auto' }}>
+    <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl w-full border border-white/20 shadow-sm text-slate-800">
       {row('Sub Total:', subTotal)}
+      
       {discountAmount > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#16a34a' }}>
-          <span>Discount (10% applied ✓):</span>
-          <strong>- Rs. {discountAmount.toFixed(2)}</strong>
+        <div className="flex justify-between items-center mb-3 text-emerald-600">
+          <span className="font-bold text-sm">Discount (10% applied ✓):</span>
+          <strong className="font-black">- Rs. {discountAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
         </div>
       )}
-      <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '8px', marginBottom: '12px' }}>
-        {row('Total Amount:', totalAmount)}
+      
+      <div className="border-t border-slate-200/60 pt-4 mb-4">
+        {row('Total Amount:', totalAmount, 'text-lg')}
       </div>
-      <div style={{ marginBottom: '12px' }}>
-        <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', fontSize: '14px' }}>
-          Paid Amount
+      
+      <div className="mb-5 bg-slate-50 p-4 rounded-xl border border-slate-100">
+        <label className="block mb-2 font-black text-xs text-slate-400 uppercase tracking-widest">
+          Paid Amount (Rs)
         </label>
         <input
           type="number"
@@ -28,12 +31,15 @@ export default function InvoiceSummary({ subTotal, discountAmount, totalAmount, 
           step="0.01"
           value={paidAmount}
           onChange={e => onPaidAmountChange(parseFloat(e.target.value) || 0)}
-          style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '6px', boxSizing: 'border-box' }}
+          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg font-black text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
         />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', color: dueAmount > 0 ? '#dc2626' : '#16a34a' }}>
-        <span>Due Amount:</span>
-        <span>Rs. {Math.max(0, dueAmount).toFixed(2)}</span>
+      
+      <div className="flex justify-between items-center pt-2">
+        <span className="text-slate-600 font-bold">Due Amount:</span>
+        <span className={`text-xl font-black ${dueAmount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+          Rs. {Math.max(0, dueAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
       </div>
     </div>
   );

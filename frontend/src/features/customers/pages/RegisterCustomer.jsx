@@ -8,7 +8,7 @@ import {
   Loader2, CheckCircle, AlertCircle 
 } from 'lucide-react';
 
-const emptyCustomer = { fullName: '', phoneNumber: '', email: '', address: '' };
+const emptyCustomer = { fullName: '', phoneNumber: '', email: '', address: '', password: '' };
 const emptyVehicle = { vehicleNumber: '', brand: '', model: '', vehicleType: '', manufactureYear: '', mileage: '', lastServiceDate: '' };
 
 export default function RegisterCustomer() {
@@ -40,7 +40,7 @@ export default function RegisterCustomer() {
         }
       });
       setSuccess('Customer and vehicle registered successfully!');
-      setTimeout(() => navigate('/customers'), 1500);
+      setTimeout(() => navigate('/staff/customers'), 1500);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please check your input.');
     } finally {
@@ -113,6 +113,14 @@ export default function RegisterCustomer() {
                 placeholder="Kathmandu, Nepal"
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Password (For Portal Login)</label>
+              <input 
+                type="password" name="password" value={customer.password} onChange={handleCustomerChange}
+                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-slate-800"
+                placeholder="Secure password (Optional)"
+              />
+            </div>
           </div>
         </div>
 
@@ -136,7 +144,7 @@ export default function RegisterCustomer() {
             Register Customer & Vehicle
           </button>
           <button 
-            type="button" onClick={() => navigate('/customers')}
+            type="button" onClick={() => navigate('/staff/customers')}
             className="px-8 py-4 bg-slate-100 text-slate-700 rounded-2xl font-black hover:bg-slate-200 transition-all flex items-center gap-2"
           >
             <X className="w-5 h-5" /> Cancel

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../shared/context/AuthContext';
+import { AuthService } from '../services/AuthService';
 import InputField from '../shared/components/InputField';
 import Button from '../shared/components/Button';
 import AlertMessage from '../shared/components/AlertMessage';
@@ -11,7 +12,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const checkPasswordStrength = (password) => {
@@ -94,11 +95,17 @@ export default function RegisterPage() {
     const { confirmPassword, ...registerData } = formData;
     registerData.role = "Customer"; // Default role for open registration
     
-    const result = await register(registerData);
-    if (result.success) {
-      navigate('/');
-    } else {
-      setError(result.error);
+    try {
+      const response = await AuthService.register(registerData);
+      if (response.isSuccess) {
+        login(response.data);
+        navigate('/');
+      } else {
+        setError(response.message || 'Registration failed.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.userMessage || 'Failed to register.');
+    } finally {
       setIsSubmitting(false);
     }
   };

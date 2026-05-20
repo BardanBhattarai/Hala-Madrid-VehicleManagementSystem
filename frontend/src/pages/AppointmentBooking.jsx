@@ -66,7 +66,7 @@ export default function AppointmentBooking() {
 
       try {
         const res = await getAllCustomers();
-        setCustomers(res.data.data || res.data);
+        setCustomers(res.data.data?.items || res.data.data || res.data || []);
       } catch {
         setError('Failed to load customers. Please ensure the backend is running.');
       } finally {
@@ -169,7 +169,7 @@ export default function AppointmentBooking() {
       setSuccess('Appointment booked successfully! Redirecting...');
       setFormData({ customerId: '', vehicleId: '', appointmentDate: '', serviceType: '', notes: '' });
       setErrors({});
-      setTimeout(() => navigate('/appointments'), 2000);
+      setTimeout(() => navigate('/customer/appointments'), 2000);
     } catch (err) {
       const msg = err.response?.data?.message
         || err.response?.data?.errors

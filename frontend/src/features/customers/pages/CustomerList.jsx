@@ -15,7 +15,7 @@ export default function CustomerList() {
     setLoading(true);
     setError('');
     getAllCustomers()
-      .then(res => setCustomers(res.data.data || res.data))
+      .then(res => setCustomers(res.data.data?.items || res.data.data || res.data || []))
       .catch(() => setError('Failed to load customers.'))
       .finally(() => setLoading(false));
   };
@@ -83,7 +83,7 @@ export default function CustomerList() {
             Search
           </button>
           <button 
-            onClick={() => navigate('/customers/register')}
+            onClick={() => navigate('/staff/customers/register')}
             className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
           >
             <UserPlus className="w-5 h-5" />
@@ -215,7 +215,7 @@ export default function CustomerList() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button 
-                        onClick={() => navigate(`/customers/${c.id}`)}
+                        onClick={() => navigate(`/staff/customers/${c.id}`)}
                         className="inline-flex items-center gap-2 bg-slate-50 text-slate-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-50 hover:text-indigo-600 transition-all border border-slate-200"
                       >
                         Profile

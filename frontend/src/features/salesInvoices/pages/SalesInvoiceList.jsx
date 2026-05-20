@@ -53,7 +53,7 @@ export default function SalesInvoiceList() {
           <p className="text-slate-500">View all sales invoices and resend email receipts.</p>
         </div>
         <button
-          onClick={() => navigate('/sales-invoices/new')}
+          onClick={() => navigate('/staff/sales-invoices/new')}
           className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
         >
           <FileText className="w-5 h-5" />

@@ -4,10 +4,13 @@ import { getCustomerProfile, updateCustomerProfile } from '../api/customerApi';
 import CustomerDetailsCard from '../components/CustomerDetailsCard';
 import PurchaseHistoryTable from '../components/PurchaseHistoryTable';
 import AlertMessage from '../../../shared/components/AlertMessage';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { Loader2, Edit3, Save, X, CheckCircle } from 'lucide-react';
 
 export default function CustomerProfile() {
   const { id } = useParams();
+  const { user } = useAuth();
+  const targetId = id || user?.customerId;
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -23,7 +26,12 @@ export default function CustomerProfile() {
   });
 
   useEffect(() => {
-    getCustomerProfile(id)
+    if (!targetId) {
+      setError('No customer profile ID specified.');
+      setLoading(false);
+      return;
+    }
+    getCustomerProfile(targetId)
       .then(res => {
         const data = res.data.data;
         setProfile(data);
@@ -37,7 +45,7 @@ export default function CustomerProfile() {
       })
       .catch(() => setError('Failed to load customer profile.'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [targetId]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -50,13 +58,13 @@ export default function CustomerProfile() {
       if (editForm.address) updateData.address = editForm.address;
       if (editForm.password) updateData.password = editForm.password;
 
-      await updateCustomerProfile(id, updateData);
+      await updateCustomerProfile(targetId, updateData);
       setSuccess('Profile updated successfully!');
       setEditing(false);
       setTimeout(() => setSuccess(''), 4000);
 
       // Reload profile
-      const res = await getCustomerProfile(id);
+      const res = await getCustomerProfile(targetId);
       setProfile(res.data.data);
     } catch {
       setError('Failed to update profile.');

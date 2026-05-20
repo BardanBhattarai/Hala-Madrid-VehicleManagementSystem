@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../shared/context/AuthContext';
 import { Car, Lock, Mail, Loader2, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import { AuthService } from '../services/AuthService';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -22,24 +22,58 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5051/api/Staff/login', {
-        email,
-        password
-      });
+      const response = await AuthService.login({ email, password });
+
+      if (!response.isSuccess) {
+        setError(response.message || 'Failed to login. Please check your credentials.');
+        return;
+      }
 
       const user = response.data;
       login(user);
-      
-      // Navigate to where they were trying to go, or their default dashboard
-      if (from) {
-        navigate(from, { replace: true });
-      } else {
-        const defaultPath = user.role === 'Admin' ? '/admin/reports' : '/staff/sales-invoices/new';
-        navigate(defaultPath, { replace: true });
-      }
+
+      const normalizeRole = (rawRole) => {
+        const role = rawRole?.trim().toLowerCase();
+        if (role === 'admin') return 'Admin';
+        if (role === 'staff') return 'Staff';
+        if (role === 'customer') return 'Customer';
+        return rawRole?.trim();
+      };
+
+      const normalizedRole = normalizeRole(user.role);
+      const getDefaultPath = (role) => {
+        switch (role) {
+          case 'Admin':
+            return '/admin/reports';
+          case 'Customer':
+            return '/customer/profile';
+          default:
+            return '/staff/sales-invoices/new';
+        }
+      };
+
+      const isSavedPathAllowedForRole = (path, role) => {
+        if (!path || !role) return false;
+        if (role === 'Admin') {
+          return path.startsWith('/admin');
+        }
+        if (role === 'Staff') {
+          return path.startsWith('/staff');
+        }
+        if (role === 'Customer') {
+          return path.startsWith('/customer');
+        }
+        return false;
+      };
+
+      const defaultPath = getDefaultPath(normalizedRole);
+      const destination = from && isSavedPathAllowedForRole(from, normalizedRole)
+        ? from
+        : defaultPath;
+      navigate(destination, { replace: true });
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Failed to login. Please check your credentials.');
+      setError(err.userMessage || 'Failed to login. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -109,17 +143,30 @@ export default function Login() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                'Sign In'
-              )}
-            </button>
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            </div>
+
+            <div className="text-center pt-2 border-t border-slate-100">
+              <span className="text-sm text-slate-500 font-medium">Don't have an account? </span>
+              <button
+                type="button"
+                onClick={() => navigate('/register')}
+                className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+              >
+                Sign Up
+              </button>
+            </div>
           </form>
         </div>
       </div>

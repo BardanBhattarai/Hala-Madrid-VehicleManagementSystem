@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using VehicleManagement.DTOs;
 using VehicleManagement.Data;
 using VehicleManagement.Models;
@@ -18,12 +19,16 @@ public class CustomerService : ICustomerService
     private readonly AppDbContext _db;
     private readonly ICustomerRepository _repo;
     private readonly ILogger<CustomerService> _logger;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
-    public CustomerService(AppDbContext db, ICustomerRepository repo, ILogger<CustomerService> logger)
+    public CustomerService(AppDbContext db, ICustomerRepository repo, ILogger<CustomerService> logger, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         _db = db;
         _repo = repo;
         _logger = logger;
+        _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -67,6 +72,39 @@ public class CustomerService : ICustomerService
 
             _db.Vehicles.Add(vehicle);
             await _db.SaveChangesAsync();
+
+            // Register Identity if credentials are provided
+            if (!string.IsNullOrEmpty(dto.Email) && !string.IsNullOrEmpty(dto.Password))
+            {
+                var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+                if (existingUser != null)
+                {
+                    throw new InvalidOperationException("User with this email already exists in Identity.");
+                }
+
+                var identityUser = new ApplicationUser
+                {
+                    UserName = dto.Email,
+                    Email = dto.Email,
+                    EmailConfirmed = true,
+                    FullName = dto.FullName,
+                    Role = "Customer",
+                    SecurityStamp = Guid.NewGuid().ToString()
+                };
+
+                var identityResult = await _userManager.CreateAsync(identityUser, dto.Password);
+                if (!identityResult.Succeeded)
+                {
+                    var errors = string.Join(", ", identityResult.Errors.Select(e => e.Description));
+                    throw new InvalidOperationException($"Failed to create Identity user: {errors}");
+                }
+
+                if (!await _roleManager.RoleExistsAsync("Customer"))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole("Customer"));
+                }
+                await _userManager.AddToRoleAsync(identityUser, "Customer");
+            }
 
             await transaction.CommitAsync();
 

@@ -15,6 +15,8 @@ public class RegisterCustomerWithVehicleDto
 
     public string Address { get; set; } = string.Empty;
 
+    public string? Password { get; set; }
+
     [Required]
     public VehicleCreateDto Vehicle { get; set; } = new();
 }

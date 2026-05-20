@@ -15,7 +15,7 @@ export default function PartsTest() {
 
   const fetchParts = () => {
     getAllParts()
-      .then(res => setParts(res.data.data))
+      .then(res => setParts(res.data.data?.items || res.data.data || res.data || []))
       .catch(() => setError('Failed to load parts.'));
   };
 

@@ -9,6 +9,7 @@ public static class AdminSeeder
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var dbContext = serviceProvider.GetRequiredService<AppDbContext>();
 
         // 1. Seed Roles
         string[] roles = { "Admin", "Staff", "Customer" };
@@ -38,6 +39,30 @@ public static class AdminSeeder
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(newAdmin, "Admin");
+            }
+        }
+
+        // 3. Sync existing Staffs from Staffs table to Identity (Fix for existing staff)
+        var staffs = dbContext.Staffs.ToList();
+        foreach (var staff in staffs)
+        {
+            var existing = await userManager.FindByEmailAsync(staff.Email);
+            if (existing == null)
+            {
+                var newIdentityUser = new ApplicationUser
+                {
+                    UserName = staff.Email,
+                    Email = staff.Email,
+                    EmailConfirmed = true,
+                    FullName = staff.FullName,
+                    Role = staff.Role ?? "Staff"
+                };
+                
+                var result = await userManager.CreateAsync(newIdentityUser, staff.Password ?? "Staff@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(newIdentityUser, newIdentityUser.Role);
+                }
             }
         }
     }

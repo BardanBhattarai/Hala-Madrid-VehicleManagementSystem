@@ -10,9 +10,12 @@ import {
 } from 'lucide-react';
 import InvoiceSummary from '../components/InvoiceSummary';
 
+import { useAuth } from '../../../shared/context/AuthContext';
+
 const emptyItem = { partId: '', quantity: 1, unitPrice: 0, partName: '' };
 
 export default function CreateSalesInvoice() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [parts, setParts] = useState([]);
@@ -24,8 +27,8 @@ export default function CreateSalesInvoice() {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    getAllCustomers().then(res => setCustomers(res.data.data || res.data)).catch(() => {});
-    getAllParts().then(res => setParts(res.data.data || res.data)).catch(() => {});
+    getAllCustomers().then(res => setCustomers(res.data.data?.items || res.data.data || res.data || [])).catch(() => {});
+    getAllParts().then(res => setParts(res.data.data?.items || res.data.data || res.data || [])).catch(() => {});
   }, []);
 
   const handlePartSelect = (idx, partId) => {
@@ -64,12 +67,12 @@ export default function CreateSalesInvoice() {
     try {
       const res = await createSalesInvoice({
         customerId: parseInt(customerId),
-        staffId: 'STAFF-001',
+        staffId: user?.userId || 'STAFF-001',
         paidAmount,
         items: items.map(i => ({ partId: parseInt(i.partId), quantity: i.quantity }))
       });
       setSuccess('Sales invoice created successfully!');
-      setTimeout(() => navigate(`/sales-invoices/${res.data.data.id}`), 1500);
+      setTimeout(() => navigate(`/staff/sales-invoices/${res.data.data.id}`), 1500);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create sales invoice.');
     } finally {

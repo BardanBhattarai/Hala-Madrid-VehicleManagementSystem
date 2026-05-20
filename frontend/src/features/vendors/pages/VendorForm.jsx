@@ -42,7 +42,7 @@ export default function VendorForm() {
     try {
       if (isEdit) await updateVendor(id, form);
       else await createVendor(form);
-      navigate('/vendors');
+      navigate('/admin/vendors');
     } catch (err) {
       setError(err.response?.data?.message || 'Operation failed. Please try again.');
     } finally {
@@ -163,7 +163,7 @@ export default function VendorForm() {
             {isEdit ? 'Update Records' : 'Register Vendor'}
           </button>
           <button 
-            type="button" onClick={() => navigate('/vendors')}
+            type="button" onClick={() => navigate('/admin/vendors')}
             className="px-8 py-4 bg-slate-100 text-slate-700 rounded-2xl font-black hover:bg-slate-200 transition-all flex items-center gap-2"
           >
             <X className="w-5 h-5" /> Cancel

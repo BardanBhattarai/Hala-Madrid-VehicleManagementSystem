@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { useAuth } from '../../../shared/context/AuthContext';
 
 export default function PurchaseHistoryTable({ history }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   if (history.length === 0) {
     return (
@@ -29,7 +31,10 @@ export default function PurchaseHistoryTable({ history }) {
           {history.map(h => (
             <tr 
               key={h.invoiceId} 
-              onClick={() => navigate(`/sales-invoices/${h.invoiceId}`)}
+              onClick={() => {
+                const prefix = user?.role === 'Customer' ? '/customer' : '/staff';
+                navigate(`${prefix}/sales-invoices/${h.invoiceId}`);
+              }}
               className="group hover:bg-slate-50 transition-colors cursor-pointer"
             >
               <td className="px-8 py-4">

@@ -6,7 +6,7 @@ import Button from '../shared/components/Button';
 import AlertMessage from '../shared/components/AlertMessage';
 import { useAuth } from '../shared/context/AuthContext';
 
-const ReviewForm = () => {
+const ReviewForm = ({ onSuccess }) => {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     customerId: '',
@@ -82,6 +82,9 @@ const ReviewForm = () => {
         comment: ''
       });
       setHoverRating(0);
+      if (onSuccess) {
+        setTimeout(onSuccess, 1500);
+      }
     } catch (err) {
       const msg = err.userMessage
         || err.response?.data?.message

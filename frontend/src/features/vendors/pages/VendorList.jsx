@@ -68,7 +68,7 @@ export default function VendorList() {
           <p className="text-slate-500">Manage your parts suppliers and contact information.</p>
         </div>
         <button 
-          onClick={() => navigate('/vendors/new')}
+          onClick={() => navigate('/admin/vendors/new')}
           className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
         >
           <Plus className="w-5 h-5" />
@@ -122,7 +122,7 @@ export default function VendorList() {
 
         <VendorTable
           vendors={vendors}
-          onEdit={(id) => navigate(`/vendors/${id}/edit`)}
+          onEdit={(id) => navigate(`/admin/vendors/${id}/edit`)}
           onDelete={handleDelete}
         />
         

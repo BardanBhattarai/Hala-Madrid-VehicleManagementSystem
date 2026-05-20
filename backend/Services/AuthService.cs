@@ -65,17 +65,42 @@ namespace VehicleManagement.Services
 
                 await _userManager.AddToRoleAsync(user, model.Role);
 
+                // Create a customer profile if the registered role is Customer and one doesn't exist
+                int? customerId = null;
+                if (model.Role.Equals("Customer", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    var existingCustomer = await _db.Customers.FirstOrDefaultAsync(c => c.Email == user.Email);
+                    if (existingCustomer != null)
+                    {
+                        customerId = existingCustomer.Id;
+                    }
+                    else
+                    {
+                        var newCustomer = new Customer
+                        {
+                            FullName = user.FullName,
+                            Email = user.Email!,
+                            PhoneNumber = string.Empty,
+                            Address = string.Empty,
+                            CreditBalance = 0,
+                            CreatedAt = System.DateTime.UtcNow
+                        };
+                        _db.Customers.Add(newCustomer);
+                        await _db.SaveChangesAsync();
+                        customerId = newCustomer.Id;
+                    }
+                }
+
                 // Generate JWT Token
                 var token = await GenerateJwtTokenAsync(user);
 
-                var customer = await _db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Email == user.Email);
                 var responseDto = new AuthResponseDto
                 {
                     Token = token,
                     Email = user.Email,
                     FullName = user.FullName,
                     Role = user.Role,
-                    CustomerId = customer?.Id
+                    CustomerId = customerId
                 };
 
                 return ApiResponse<AuthResponseDto>.SuccessResponse(responseDto, "User registered successfully");
@@ -96,12 +121,14 @@ namespace VehicleManagement.Services
                 {
                     var token = await GenerateJwtTokenAsync(user);
                     var customer = await _db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Email == user.Email);
+                    var roles = await _userManager.GetRolesAsync(user);
                     var responseDto = new AuthResponseDto
                     {
                         Token = token,
+                        UserId = user.Id,
                         Email = user.Email!,
                         FullName = user.FullName,
-                        Role = user.Role,
+                        Role = roles.FirstOrDefault() ?? user.Role,
                         CustomerId = customer?.Id
                     };
                     return ApiResponse<AuthResponseDto>.SuccessResponse(responseDto, "Login successful");
@@ -126,12 +153,14 @@ namespace VehicleManagement.Services
                 }
 
                 var customer = await _db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Email == user.Email);
+                var roles = await _userManager.GetRolesAsync(user);
                 var responseDto = new AuthResponseDto
                 {
                     Token = "", // Client already has the token
+                    UserId = user.Id,
                     Email = user.Email!,
                     FullName = user.FullName,
-                    Role = user.Role,
+                    Role = roles.FirstOrDefault() ?? user.Role,
                     CustomerId = customer?.Id
                 };
                 return ApiResponse<AuthResponseDto>.SuccessResponse(responseDto, "User retrieved successfully");
